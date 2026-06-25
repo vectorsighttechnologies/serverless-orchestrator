@@ -1,95 +1,167 @@
-# Serverless Orchestrator
+# ⚡ Serverless Orchestrator
 
-Serverless Orchestrator is a one-stop, self-hosted platform designed to simplify, automate, and manage AWS Lambda instrumentation and observability integrations (such as New Relic) across multiple AWS accounts and regions. 
+<p align="center">
+  <img src="frontend/public/logo.png" alt="Serverless Orchestrator Logo" width="120" />
+</p>
 
-It provides an intuitive dashboard UI to track function monitoring states, perform concurrent bulk instrumentation (attaching/detaching layers), and natively provision metric stream integrations via CloudFormation.
+<h3 align="center">Serverless Orchestrator</h3>
 
----
+<p align="center">
+  A premium, self-hosted platform designed to automate AWS Lambda instrumentation, configure telemetry, and manage New Relic observability across accounts and regions.
+</p>
 
-## Key Features
-
-- **Multi-Account & Multi-Region Support:** Easily configure, persist, and switch between multiple AWS connections (Orchestrators) directly from the dashboard header.
-- **Concurrent Bulk Instrumentation:** Attach or detach monitoring layers from dozens of Lambda functions simultaneously in seconds.
-- **Automated Observability Setup:** Provision AWS-to-observability integrations (e.g. Kinesis Firehose + Cloudwatch Metric Streams) with single-click actions deploying nested CloudFormation templates.
-- **NerdGraph Account Linking:** Automatically queries and registers the AWS account connection via NerdGraph GraphQL API, completely unlinking the accounts upon deletion.
-- **Self-Cleaning Deployments:** Automatically detects and cleans up failed/stuck CloudFormation stacks before initiating a fresh integration.
-- **Internal Exclusions:** Hides platform helper functions and the orchestrator itself to prevent accidental instrumentation.
-
----
-
-## Repository Structure
-
-- `frontend/` - Single Page Application built using **Vue 3**, **Vite**, **TypeScript**, and modern HSL styling.
-- `backend/` - Secure HTTP API Gateway written in **Go**, utilizing **SQLite** (or PostgreSQL) to persist user connections and audit logs.
-- `lambda/` - The serverless orchestrator engine in **Go**, packaged and deployed to AWS Lambda using the **AWS SAM CLI**.
-
----
-
-## Requirements
-
-- **Go 1.22+** (for compiling backend gateway & orchestrator engine)
-- **Node.js 18+ & NPM** (for launching the Vue dashboard application)
-- **Python 3.10+** (for packaging execution scripts)
-- **AWS CLI & AWS SAM CLI** (configured with deployment permissions)
+<p align="center">
+  <a href="https://opensource.org/licenses/Apache-2.0">
+    <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=flat-square" alt="License" />
+  </a>
+  <a href="https://golang.org/">
+    <img src="https://img.shields.io/badge/Go-1.22+-00ADD8.svg?style=flat-square&logo=go&logoColor=white" alt="Go Version" />
+  </a>
+  <a href="https://vuejs.org/">
+    <img src="https://img.shields.io/badge/Vue-3.x-4FC08D.svg?style=flat-square&logo=vuedotjs" alt="Vue Version" />
+  </a>
+  <a href="https://aws.amazon.com/">
+    <img src="https://img.shields.io/badge/AWS-Serverless-FF9900.svg?style=flat-square&logo=amazon-aws&logoColor=white" alt="AWS Status" />
+  </a>
+</p>
 
 ---
 
-## Quick Start Guide
+## 🎯 What is Serverless Orchestrator?
 
-### 1. Deploy the Orchestrator Lambda
+Managing serverless observability at scale can be challenging. **Serverless Orchestrator** is a lightweight, secure tool that handles the complex AWS configuration, New Relic account linking, and Lambda layer management for you. 
 
-First, compile and deploy the orchestrator engine to the AWS region(s) you wish to manage:
+Instead of configuring settings file-by-file or writing custom CLI commands, you get an interactive dashboard UI to manage all operations concurrently.
+
+---
+
+## ✨ Features at a Glance
+
+| Feature | Description | Interactive Status |
+| :--- | :--- | :---: |
+| **Multi-Connection Dashboard** | Register and switch between different AWS regions and account credentials instantly. | 🟢 Ready |
+| **Bulk Instrumentation** | Attach/detach telemetry layers to dozens of Lambda functions concurrently. | 🟢 Ready |
+| **Automated Account Linking** | Resolves IAM role ARNs and registers AWS connections via NerdGraph APIs. | 🟢 Ready |
+| **Metric Streams Integration** | Provision Firehose, S3, and CloudWatch Metric Streams via CloudFormation. | 🟢 Ready |
+| **Self-Cleaning Deploys** | Auto-detects and removes failed/stuck CloudFormation stacks before retrying. | 🟢 Ready |
+| **Internal Safety Filtering** | Excludes management stacks and orchestrator helpers from instrumentation risks. | 🟢 Ready |
+
+---
+
+## 🏗️ Architecture Design
+
+```
+                     ┌───────────────────────────────┐
+                     │          Vue 3 UI             │
+                     │  (Vite + TypeScript SPA)      │
+                     └──────────────┬────────────────┘
+                                    │
+                                    │ HTTP / JSON
+                                    ▼
+                     ┌───────────────────────────────┐
+                     │      Go Gateway Backend       │
+                     │   (Encrypted SQLite Store)    │
+                     └──────────────┬────────────────┘
+                                    │
+                                    │ Secure Lambda Invoke
+                                    ▼
+                     ┌───────────────────────────────┐
+                     │    Go Lambda Orchestrator     │
+                     │     (AWS Engine Instance)     │
+                     └──────────┬──────────────┬─────┘
+                                │              │
+              AWS CloudFormation│              │New Relic NerdGraph
+              (Metric Streams)  ▼              ▼ (Account Link APIs)
+                        [AWS Account]   [New Relic Platform]
+```
+
+---
+
+## ⚙️ Requirements & Dependencies
+
+* **Go 1.22+** (Backend gateway & orchestrator binary compilation)
+* **Node.js 18+ & NPM** (Vue 3 client dev and production build)
+* **Python 3.10+** (Compiling & packaging execution scripts)
+* **AWS CLI & AWS SAM CLI** (Cloud deployment and stack creation)
+
+---
+
+## 🚀 Setup & Launch Guide
+
+Click on the sections below to view the detailed step-by-step setup guides:
+
+<details>
+<summary><b>1. Deploying the Orchestrator Lambda Engine</b></summary>
+<br>
+
+First, deploy the serverless execution engine into the target AWS account and region you want to manage:
 
 ```bash
 cd lambda
 
-# Package the Go Lambda bootstrap and SAM templates
+# 1. Package the Go Lambda binary and template
 python pack.py
 
-# Deploy using SAM (interactive options)
+# 2. Deploy using SAM CLI (guided walkthrough)
 sam deploy --guided
 ```
 
-Upon successful deployment, copy the **OrchestratorApiUrl** and the **OrchestratorApiKey** from the outputs.
+Once the stack finishes deploying, make sure to copy these outputs from the console:
+* `OrchestratorApiUrl` (The endpoint URL for the API Gateway)
+* `OrchestratorApiKey` (The secure API Key generated for your gateway)
 
-### 2. Launch the Backend Gateway
+</details>
 
-Initialize and run the backend server which handles routing, connection encryption, and audit logs:
+<details>
+<summary><b>2. Configuring the Backend Gateway</b></summary>
+<br>
+
+The backend gateway handles connection settings, performs encryption, and logs user actions:
 
 ```bash
-cd ../backend
+cd backend
 
-# Clean up and load dependencies
+# 1. Tidy modules and cache dependencies
 go mod tidy
 
-# Start the Go server (runs on port 9000 by default)
+# 2. Start the HTTP server (defaults to port 9000)
 go run ./cmd/server/main.go
 ```
 
-The database file `serverless_orchestrator.db` will be initialized automatically in the root of the backend directory.
+* **Database:** An SQLite database file named `serverless_orchestrator.db` will be automatically initialized in the backend directory.
+* **Environment Variables:** You can set the following parameters to override default settings:
+  * `DATABASE_URL` (custom path/connection string)
+  * `JWT_SECRET` (custom authentication signing key)
+  * `ENCRYPTION_KEY` (64-character hex string to encrypt credentials)
 
-### 3. Launch the Frontend UI
+</details>
 
-Install node dependencies and run the dashboard UI locally:
+<details>
+<summary><b>3. Running the Dashboard Application</b></summary>
+<br>
+
+Start the web client to interact with the system:
 
 ```bash
-cd ../frontend
+cd frontend
 
-# Install dependencies
+# 1. Install Node modules
 npm install
 
-# Start the development server
+# 2. Launch the developer web server
 npm run dev
 ```
 
-Open the printed URL (typically `http://localhost:5173`) in your browser. Register/login, go to **Settings** / **Connections**, add your newly deployed Orchestrator connection details, and begin managing your serverless functions!
+* Open your browser to the local URL (typically `http://localhost:5173`).
+* Log in, navigate to **Settings** -> **Connections**, click **Add Connection**, and fill in the details from the Orchestrator Lambda outputs.
+* Switch to the new connection from the header dropdown to start managing your functions.
+
+</details>
 
 ---
 
-## License
+## 📜 License
 
-Licensed under the **Apache License, Version 2.0** (the "License"). You may obtain a copy of the License in the [LICENSE](./LICENSE) file or at:
+This project is licensed under the terms of the **Apache License 2.0**. It grants users and contributors explicit patent protection while offering full liability disclaimers:
 
-[http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+> Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0).
