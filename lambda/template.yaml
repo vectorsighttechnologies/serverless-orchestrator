@@ -1,0 +1,207 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Lambda Instrumentation Platform — Orchestrator
+  Go Lambda function that instruments/uninstruments Lambda functions for New Relic.
+
+# ─────────────────────────────────────────────────────────────
+# Parameters
+# ─────────────────────────────────────────────────────────────
+Parameters:
+  NewRelicLicenseKey:
+    Type: String
+    NoEcho: true
+    Description: NR Ingest License Key (optional — can be provided via UI headers)
+    Default: ''
+
+  NewRelicAccountId:
+    Type: String
+    Description: NR Account ID (optional — can be provided via UI headers)
+    Default: ''
+
+  NewRelicApiKey:
+    Type: String
+    NoEcho: true
+    Description: NR User API Key for Integration setup (optional)
+    Default: ''
+
+  NewRelicRegion:
+    Type: String
+    Default: 'us'
+    AllowedValues: ['us', 'eu']
+    Description: NR region (us or eu)
+
+# ─────────────────────────────────────────────────────────────
+# Resources
+# ─────────────────────────────────────────────────────────────
+Resources:
+  OrchestratorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Lambda Instrumentation Platform orchestrator
+      Handler: bootstrap
+      Runtime: provided.al2023
+      Architectures: [arm64]
+      MemorySize: 256
+      Timeout: 30
+      CodeUri: ./function.zip
+      Environment:
+        Variables:
+          NEW_RELIC_LICENSE_KEY: !Ref NewRelicLicenseKey
+          NEW_RELIC_ACCOUNT_ID: !Ref NewRelicAccountId
+          NEW_RELIC_API_KEY: !Ref NewRelicApiKey
+          NEW_RELIC_REGION: !Ref NewRelicRegion
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            # Lambda permissions
+            - Effect: Allow
+              Action:
+                - lambda:ListFunctions
+                - lambda:GetFunction
+                - lambda:GetFunctionConfiguration
+                - lambda:UpdateFunctionConfiguration
+                - lambda:GetLayerVersion
+                - lambda:TagResource
+                - lambda:UntagResource
+                - lambda:ListTags
+                - lambda:CreateFunction
+                - lambda:DeleteFunction
+                - lambda:InvokeFunction
+              Resource: '*'
+            # IAM permissions (for attaching SM policy and managing CF roles)
+            - Effect: Allow
+              Action:
+                - iam:AttachRolePolicy
+                - iam:DetachRolePolicy
+                - iam:GetRole
+                - iam:CreateRole
+                - iam:DeleteRole
+                - iam:PassRole
+                - iam:PutRolePolicy
+                - iam:DeleteRolePolicy
+                - iam:GetRolePolicy
+                - iam:UpdateRole
+              Resource: '*'
+            # CloudFormation permissions (for integration setup)
+            - Effect: Allow
+              Action:
+                - cloudformation:CreateStack
+                - cloudformation:DeleteStack
+                - cloudformation:DescribeStacks
+                - cloudformation:CreateChangeSet
+                - cloudformation:ExecuteChangeSet
+                - cloudformation:DescribeChangeSet
+              Resource: '*'
+            # CloudWatch Logs, S3, Firehose, and CloudWatch Metrics (for integration stack resources)
+            - Effect: Allow
+              Action:
+                - logs:PutSubscriptionFilter
+                - logs:DeleteSubscriptionFilter
+                - logs:DescribeSubscriptionFilters
+                - logs:DescribeLogGroups
+                - logs:CreateLogGroup
+                - logs:DeleteLogGroup
+                - logs:PutRetentionPolicy
+                - logs:DeleteRetentionPolicy
+                - logs:CreateLogStream
+                - logs:DeleteLogStream
+                - logs:PutLogEvents
+                - logs:DescribeLogStreams
+                - s3:CreateBucket
+                - s3:DeleteBucket
+                - s3:PutBucketPolicy
+                - s3:DeleteBucketPolicy
+                - s3:PutBucketTagging
+                - s3:GetBucketLocation
+                - s3:ListBucket
+                - s3:PutEncryptionConfiguration
+                - s3:PutBucketPublicAccessBlock
+                - s3:GetBucketPolicy
+                - s3:GetBucketTagging
+                - s3:GetEncryptionConfiguration
+                - s3:GetBucketPublicAccessBlock
+                - firehose:CreateDeliveryStream
+                - firehose:DeleteDeliveryStream
+                - firehose:DescribeDeliveryStream
+                - firehose:ListDeliveryStreams
+                - firehose:TagDeliveryStream
+                - firehose:UntagDeliveryStream
+                - cloudwatch:PutMetricStream
+                - cloudwatch:DeleteMetricStream
+                - cloudwatch:GetMetricStream
+                - cloudwatch:ListMetricStreams
+                - cloudwatch:StartMetricStreams
+                - cloudwatch:StopMetricStreams
+              Resource: '*'
+            # AWS Config permissions
+            - Effect: Allow
+              Action:
+                - config:PutConfigurationRecorder
+                - config:PutDeliveryChannel
+                - config:DeleteConfigurationRecorder
+                - config:DeleteDeliveryChannel
+                - config:DescribeConfigurationRecorders
+                - config:DescribeDeliveryChannels
+                - config:StartConfigurationRecorder
+                - config:StopConfigurationRecorder
+              Resource: '*'
+            # Secrets Manager (for license key access)
+            - Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource: '*'
+            # STS (for account ID detection)
+            - Effect: Allow
+              Action:
+                - sts:GetCallerIdentity
+              Resource: '*'
+      Events:
+        # Catch-all API Gateway route
+        ApiGateway:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+            Auth:
+              ApiKeyRequired: true
+
+  # API Key for authentication
+  ApiKey:
+    Type: AWS::ApiGateway::ApiKey
+    Properties:
+      Enabled: true
+      Name: !Sub '${AWS::StackName}-api-key'
+
+  # Usage Plan to allow requests through the API key
+  UsagePlan:
+    Type: AWS::ApiGateway::UsagePlan
+    Properties:
+      UsagePlanName: !Sub '${AWS::StackName}-usage-plan'
+      ApiStages:
+        - ApiId: !Ref ServerlessRestApi
+          Stage: Prod
+
+  # Link the API Key to the Usage Plan
+  UsagePlanKey:
+    Type: AWS::ApiGateway::UsagePlanKey
+    Properties:
+      KeyId: !Ref ApiKey
+      KeyType: API_KEY
+      UsagePlanId: !Ref UsagePlan
+
+# ─────────────────────────────────────────────────────────────
+# Outputs
+# ─────────────────────────────────────────────────────────────
+Outputs:
+  ApiUrl:
+    Description: API Gateway URL for the orchestrator
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod'
+
+  ApiKeyId:
+    Description: API Key ID (retrieve the actual key from the AWS console)
+    Value: !Ref ApiKey
+
+  FunctionArn:
+    Description: Orchestrator Lambda function ARN
+    Value: !GetAtt OrchestratorFunction.Arn

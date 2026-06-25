@@ -1,0 +1,35 @@
+node_modules/
+frontend/node_modules/
+frontend/dist/
+.DS_Store
+
+# Local database files
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+backend/serverless_orchestrator.db
+backend/serverless_orchestrator.db-journal
+
+# Go binaries
+*.exe
+*.exe~
+**/*.exe
+**/*.exe~
+backend/server
+lambda/lambda
+
+# Lambda build artifacts
+lambda/.build/
+lambda/function.zip
+frontend/public/orchestrator-sam.zip
+
+# Local environment files
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+
+# Code review helper configs
+.code-review-graph/
