@@ -153,8 +153,10 @@ npm run dev
 ```
 
 * Open your browser to the local URL (typically `http://localhost:5173`).
-* Log in, navigate to **Settings** -> **Connections**, click **Add Connection**, and fill in the details from the Orchestrator Lambda outputs.
-* Switch to the new connection from the header dropdown to start managing your functions.
+* **First-time Onboarding:** If this is your first launch, toggle **Sign Up** on the login screen to register your local administrator account credentials.
+* **Configure Connections:** Navigate to **Settings** -> **Connections**, click **Add Connection**, and fill in the details from the Orchestrator Lambda outputs.
+* **Dashboard Control:** Switch to the new connection from the header dropdown to start managing your functions.
+
 
 </details>
 
