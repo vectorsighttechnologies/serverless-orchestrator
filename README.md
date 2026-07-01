@@ -110,6 +110,10 @@ Once the stack finishes deploying, make sure to copy these outputs from the cons
 * `OrchestratorApiUrl` (The endpoint URL for the API Gateway)
 * `OrchestratorApiKey` (The secure API Key generated for your gateway)
 
+* **Environment Variables (Optional):** You can set provider credentials directly as environment variables on your Orchestrator Lambda function to keep your requests clean:
+  * **Datadog:** `DATADOG_API_KEY`, `DATADOG_SITE`
+  * **New Relic:** `NEW_RELIC_LICENSE_KEY`, `NEW_RELIC_ACCOUNT_ID`, `NEW_RELIC_API_KEY`, `NEW_RELIC_REGION`
+
 </details>
 
 <details>
