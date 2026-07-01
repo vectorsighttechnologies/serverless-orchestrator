@@ -17,12 +17,13 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 
-	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/awsclient"
-	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/newrelic"
-	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/types"
+	"github.com/vectorsight/serverless-tool/lambda/internal/awsclient"
+	"github.com/vectorsight/serverless-tool/lambda/internal/datadog"
+	"github.com/vectorsight/serverless-tool/lambda/internal/newrelic"
+	"github.com/vectorsight/serverless-tool/lambda/internal/types"
 )
 
-// HandleListFunctions returns all Lambda functions with their NR instrumentation status.
+// HandleListFunctions returns all Lambda functions with their NR/DD instrumentation status.
 //
 // GET /functions
 func HandleListFunctions(
@@ -30,7 +31,21 @@ func HandleListFunctions(
 	request events.APIGatewayProxyRequest,
 	clients *awsclient.Factory,
 ) events.APIGatewayProxyResponse {
-	functions, err := newrelic.ListFunctions(ctx, clients)
+	cfg, _ := loadConfig(request.Headers)
+	provider := "newrelic"
+	if cfg != nil && cfg.SelectedProvider != "" {
+		provider = cfg.SelectedProvider
+	}
+
+	var functions []types.FunctionInfo
+	var err error
+
+	if provider == "datadog" {
+		functions, err = datadog.ListFunctions(ctx, clients)
+	} else {
+		functions, err = newrelic.ListFunctions(ctx, clients)
+	}
+
 	if err != nil {
 		return errorResponse(500, "Failed to list functions: "+err.Error())
 	}
@@ -42,6 +57,7 @@ func HandleListFunctions(
 //
 // POST /functions/install
 // Body: { "functionArns": [...], "method": "layer"|"log_ingestion", "mode": "serverless"|"apm" }
+//
 // Supports bulk operations — processes all functions concurrently for speed.
 func HandleInstallFunctions(
 	ctx context.Context,
@@ -66,15 +82,7 @@ func HandleInstallFunctions(
 		req.Mode = "serverless"
 	}
 
-	// Validate method and mode
-	if req.Method != "layer" && req.Method != "log_ingestion" {
-		return errorResponse(400, fmt.Sprintf("Invalid method %q. Must be 'layer' or 'log_ingestion'", req.Method))
-	}
-	if req.Method == "layer" && req.Mode != "serverless" && req.Mode != "apm" {
-		return errorResponse(400, fmt.Sprintf("Invalid mode %q. Must be 'serverless' or 'apm'", req.Mode))
-	}
-
-	// Load NR config
+	// Validate method and mode for New Relic (only if not Datadog)
 	cfg, err := loadConfig(request.Headers)
 	if err != nil {
 		return errorResponse(500, "Failed to load config: "+err.Error())
@@ -83,8 +91,21 @@ func HandleInstallFunctions(
 		return errorResponse(400, err.Error())
 	}
 
+	if cfg.SelectedProvider != "datadog" {
+		if req.Method != "layer" && req.Method != "log_ingestion" {
+			return errorResponse(400, fmt.Sprintf("Invalid method %q. Must be 'layer' or 'log_ingestion'", req.Method))
+		}
+		if req.Method == "layer" && req.Mode != "serverless" && req.Mode != "apm" {
+			return errorResponse(400, fmt.Sprintf("Invalid mode %q. Must be 'serverless' or 'apm'", req.Mode))
+		}
+	}
+
 	// Process all functions concurrently
 	results := processBulk(ctx, req.FunctionArns, func(functionARN string) error {
+		if cfg.SelectedProvider == "datadog" {
+			return datadog.InstallLayer(ctx, clients, cfg, functionARN)
+		}
+
 		switch req.Method {
 		case "layer":
 			return newrelic.InstallLayer(ctx, clients, cfg, functionARN, req.Mode)
@@ -98,7 +119,7 @@ func HandleInstallFunctions(
 	return jsonResponse(200, types.BatchOperationResponse{Results: results})
 }
 
-// HandleUninstallFunctions removes NR instrumentation from the specified functions.
+// HandleUninstallFunctions removes NR/DD instrumentation from the specified functions.
 //
 // POST /functions/uninstall
 // Body: { "functionArns": [...] }
@@ -116,7 +137,17 @@ func HandleUninstallFunctions(
 		return errorResponse(400, "At least one function ARN is required")
 	}
 
+	cfg, _ := loadConfig(request.Headers)
+	provider := "newrelic"
+	if cfg != nil && cfg.SelectedProvider != "" {
+		provider = cfg.SelectedProvider
+	}
+
 	results := processBulk(ctx, req.FunctionArns, func(functionARN string) error {
+		if provider == "datadog" {
+			return datadog.UninstallLayer(ctx, clients, functionARN)
+		}
+
 		// Remove layer instrumentation
 		if err := newrelic.UninstallLayer(ctx, clients, functionARN); err != nil {
 			return err
@@ -134,6 +165,7 @@ func HandleUninstallFunctions(
 // ─────────────────────────────────────────────────────────────
 
 // processBulk executes a function on each ARN concurrently and collects results.
+// This is the key improvement over the sequential Python CLI.
 func processBulk(
 	ctx context.Context,
 	arns []string,
@@ -159,6 +191,9 @@ func processBulk(
 			if err := operation(functionARN); err != nil {
 				result.Success = false
 				result.Error = err.Error()
+				fmt.Printf("[ORCHESTRATOR] Error processing function %s: %v\n", functionARN, err)
+			} else {
+				fmt.Printf("[ORCHESTRATOR] Successfully processed function %s\n", functionARN)
 			}
 
 			mu.Lock()

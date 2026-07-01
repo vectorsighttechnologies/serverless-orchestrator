@@ -323,10 +323,24 @@
               </div>
               <div>
                 <h3 class="result-title">Connection Successful</h3>
-                <p class="result-desc">NR keys are configured on the orchestrator</p>
+                <p class="result-desc">Credentials are configured on the orchestrator</p>
               </div>
             </div>
-            <div class="config-details">
+
+            <!-- Datadog configured view -->
+            <div v-if="provider === 'datadog'" class="config-details">
+              <div class="config-item">
+                <span class="config-item__label">Datadog API Key</span>
+                <span class="badge badge-success"><span class="badge-dot"></span> Configured</span>
+              </div>
+              <div class="config-item">
+                <span class="config-item__label">Datadog Site</span>
+                <span class="badge badge-info">{{ healthResult.config.ddSiteConfigured ? 'Configured' : 'datadoghq.com' }}</span>
+              </div>
+            </div>
+
+            <!-- New Relic configured view -->
+            <div v-else class="config-details">
               <div class="config-item">
                 <span class="config-item__label">NR License Key</span>
                 <span class="badge badge-success"><span class="badge-dot"></span> Configured</span>
@@ -360,8 +374,8 @@
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               </div>
               <div>
-                <h3 class="result-title">NR Keys Not Found on Orchestrator</h3>
-                <p class="result-desc">Enter your New Relic credentials below</p>
+                <h3 class="result-title">Credentials Not Found on Orchestrator</h3>
+                <p class="result-desc">Enter your provider credentials below</p>
               </div>
             </div>
 
@@ -369,7 +383,26 @@
               💡 For better security, set these as environment variables on your orchestrator Lambda during deployment.
             </div>
 
-            <div class="nr-fields">
+            <!-- Datadog Fields -->
+            <div v-if="provider === 'datadog'" class="nr-fields">
+              <div class="form-group">
+                <label class="form-label">Datadog API Key</label>
+                <input v-model="ddCreds.apiKey" type="password" class="form-input" placeholder="Your Datadog API Key" id="dd-api-key" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Datadog Site</label>
+                <select v-model="ddCreds.site" class="form-select" id="dd-site">
+                  <option value="datadoghq.com">datadoghq.com (US1)</option>
+                  <option value="us3.datadoghq.com">us3.datadoghq.com (US3)</option>
+                  <option value="us5.datadoghq.com">us5.datadoghq.com (US5)</option>
+                  <option value="datadoghq.eu">datadoghq.eu (EU)</option>
+                  <option value="ddog-gov.com">ddog-gov.com (GovCloud US)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- New Relic Fields -->
+            <div v-else class="nr-fields">
               <div class="form-group">
                 <label class="form-label">NR License Key</label>
                 <input v-model="nrCreds.licenseKey" type="password" class="form-input" placeholder="Your NR Ingest License Key" id="nr-license-key" />
@@ -397,7 +430,7 @@
             <button
               class="btn btn-primary btn-lg"
               style="width:100%;margin-top:var(--space-6)"
-              :disabled="!nrCreds.licenseKey || !nrCreds.accountId"
+              :disabled="provider === 'datadog' ? !ddCreds.apiKey : (!nrCreds.licenseKey || !nrCreds.accountId)"
               @click="goToDashboardWithCreds"
               id="btn-continue-creds"
             >
@@ -427,6 +460,7 @@ import type { HealthResponse } from '@/types'
 
 const router = useRouter()
 const {
+  provider,
   pendingRegions,
   addPendingRegion,
   removePendingRegion,
@@ -438,6 +472,7 @@ const {
 const showKey = ref<boolean[]>(pendingRegions.value.map(() => false))
 const regionStatus = ref<{ ok: boolean; message: string }[]>([])
 const nrCreds = ref({ licenseKey: '', accountId: '', apiKey: '', region: 'us' as 'us' | 'eu' })
+const ddCreds = ref({ apiKey: '', site: 'datadoghq.com' })
 const isConnecting = ref(false)
 const connectError = ref('')
 const healthResult = ref<HealthResponse | null>(null)
@@ -486,6 +521,11 @@ onMounted(async () => {
     if (prefs.hasNrApiKey) {
       nrCreds.value.apiKey = '••••••••'
     }
+
+    ddCreds.value.site = prefs.ddSite || 'datadoghq.com'
+    if (prefs.hasDdApiKey) {
+      ddCreds.value.apiKey = '••••••••'
+    }
   } catch (err) {
     console.error('Failed to prefill preferences:', err)
   }
@@ -502,11 +542,13 @@ async function connect() {
     
     // Save/Update config on backend gateway
     const payload = {
-      selectedProvider: 'newrelic',
+      selectedProvider: provider.value || 'newrelic',
       nrAccountId: nrCreds.value.accountId,
       nrApiKey: nrCreds.value.apiKey === '••••••••' ? '' : nrCreds.value.apiKey,
       nrLicenseKey: nrCreds.value.licenseKey === '••••••••' ? '' : nrCreds.value.licenseKey,
       nrRegion: nrCreds.value.region,
+      ddApiKey: ddCreds.value.apiKey === '••••••••' ? '' : ddCreds.value.apiKey,
+      ddSite: ddCreds.value.site,
       lambdaApiUrl: first.apiGatewayUrl,
       lambdaApiKey: first.apiKey === '••••••••' ? '' : first.apiKey,
     }
@@ -517,13 +559,16 @@ async function connect() {
     // contacts AWS Lambda Orchestrator, and returns functions successfully).
     await api.listFunctions()
     
-    // Set healthResult mock to satisfy template template variables
+    // Set healthResult mock to satisfy template variables
     healthResult.value = {
       status: 'ok',
       config: {
+        selectedProvider: provider.value || 'newrelic',
         licenseKeyConfigured: nrCreds.value.licenseKey !== '',
         accountIdConfigured: nrCreds.value.accountId !== '',
         apiKeyConfigured: nrCreds.value.apiKey !== '',
+        ddApiKeyConfigured: ddCreds.value.apiKey !== '',
+        ddSiteConfigured: ddCreds.value.site !== '',
         region: nrCreds.value.region,
         source: 'env_vars'
       }
@@ -547,7 +592,7 @@ function goToDashboard() {
   router.push('/dashboard')
 }
 
-// Handles Continue to Dashboard when NR keys are submitted
+// Handles Continue to Dashboard when NR/DD keys are submitted
 function goToDashboardWithCreds() {
   connect().then(() => {
     if (!connectError.value) {

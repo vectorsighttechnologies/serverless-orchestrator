@@ -1,6 +1,6 @@
 export type Provider = 'newrelic' | 'datadog'
 
-export type InstrumentationStatus = 'instrumented' | 'not_instrumented'
+export type InstrumentationStatus = 'instrumented' | 'not_instrumented' | 'instrumented_newrelic' | 'instrumented_datadog'
 export type InstrumentationMode = 'serverless' | 'apm' | 'log_ingestion' | 'none'
 export type InstrumentMethod = 'layer' | 'log_ingestion'
 export type IntegrationMethod = 'metric_streams' | 'api_polling'
@@ -22,13 +22,21 @@ export interface NRCredentials {
     region: 'us' | 'eu'
 }
 
+export interface DDCredentials {
+    apiKey: string
+    site: string
+}
+
 export interface HealthResponse {
     status: string
     config: {
-        licenseKeyConfigured: boolean
-        accountIdConfigured: boolean
-        apiKeyConfigured: boolean
-        region: string
+        selectedProvider?: string
+        licenseKeyConfigured?: boolean
+        accountIdConfigured?: boolean
+        apiKeyConfigured?: boolean
+        ddApiKeyConfigured?: boolean
+        ddSiteConfigured?: boolean
+        region?: string
         source: ConfigSource
     }
 }

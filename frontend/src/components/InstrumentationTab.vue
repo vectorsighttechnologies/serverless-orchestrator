@@ -104,66 +104,93 @@
       </div>
     </div>
 
-    <!-- Function Table -->
-    <div class="table-container">
-      <table class="table">
-        <thead>
-          <tr>
-            <th class="th-check">
-              <input
-                type="checkbox"
-                class="checkbox"
-                id="select-all"
-                :checked="allSelected"
-                @change="toggleAll"
-              />
-            </th>
-            <th>FUNCTION NAME</th>
-            <th>RUNTIME</th>
-            <th>REGION</th>
-            <th>STATUS</th>
-            <th>MODE</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="fn in filteredFunctions"
-            :key="fn.arn"
-            :class="{ selected: selectedArns.includes(fn.arn) }"
-          >
-            <td class="td-check">
-              <input
-                type="checkbox"
-                class="checkbox"
-                :id="'checkbox-' + fn.name"
-                :checked="selectedArns.includes(fn.arn)"
-                :disabled="isOrchestrator(fn.name) || isBlocked"
-                @change="toggleSelect(fn.arn)"
-              />
-            </td>
-            <td class="td-name">
-              <div class="fn-name font-mono">{{ fn.name }}</div>
-              <div class="fn-arn text-xs text-secondary font-mono">{{ fn.arn }}</div>
-            </td>
-            <td>
-              <span class="runtime-badge" :class="runtimeClass(fn.runtime)">{{ fn.runtime }}</span>
-            </td>
-            <td class="font-mono text-sm text-secondary">{{ fn.region }}</td>
-            <td>
-              <span class="status-indicator" :class="statusClass(fn)">
-                <span class="status-dot"></span>
-                {{ statusLabel(fn) }}
-              </span>
-            </td>
-            <td>
-              <span v-if="fn.mode !== 'none'" class="mode-badge" :class="'mode-' + fn.mode">
-                {{ modeLabel(fn.mode) }}
-              </span>
-              <span v-else class="text-xs text-secondary">—</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Error Alert Banner -->
+    <div v-if="errorMessage" class="alert alert-danger mb-6 flex justify-between items-start animate-fade-in" style="width: 100%; border-radius: var(--radius-lg); margin-bottom: var(--space-4);">
+      <div class="flex items-start gap-3">
+        <span class="alert-icon" style="font-size: 1.2rem; line-height: 1.2;">⚠️</span>
+        <div class="flex-col">
+          <strong style="font-weight: 600; display: block; margin-bottom: 2px;">Instrumentation Operation Failed</strong>
+          <span class="text-xs" style="word-break: break-word; line-height: 1.4;">{{ errorMessage }}</span>
+        </div>
+      </div>
+      <button class="search-clear" style="background: none; border: none; color: inherit; padding: 4px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-left: auto;" @click="errorMessage = ''" title="Dismiss">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Function Table Wrapper -->
+    <div class="table-container-wrapper" style="position: relative;">
+      <!-- Loading Overlay -->
+      <div v-if="isLoading || isOperating" class="loading-overlay animate-fade-in" style="position: absolute; inset: 0; background: rgba(13, 17, 23, 0.75); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; z-index: 10; border-radius: var(--radius-lg);">
+        <div class="flex-col items-center gap-3" style="align-items: center;">
+          <span class="spinner" style="width: 36px; height: 36px; border-width: 3px;"></span>
+          <span class="loading-text" style="font-weight: 500; font-size: var(--font-size-sm); color: var(--text-primary); margin-top: 8px;">
+            {{ isOperating ? 'Updating instrumentation configuration on AWS...' : 'Loading AWS Lambda functions...' }}
+          </span>
+          <span v-if="isOperating" class="loading-subtext text-xs text-secondary" style="font-size: 11px; margin-top: 4px;">This process may take 10-15 seconds.</span>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th class="th-check">
+                <input
+                  type="checkbox"
+                  class="checkbox"
+                  id="select-all"
+                  :checked="allSelected"
+                  @change="toggleAll"
+                />
+              </th>
+              <th>FUNCTION NAME</th>
+              <th>RUNTIME</th>
+              <th>REGION</th>
+              <th>STATUS</th>
+              <th>MODE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="fn in filteredFunctions"
+              :key="fn.arn"
+              :class="{ selected: selectedArns.includes(fn.arn) }"
+            >
+              <td class="td-check">
+                <input
+                  type="checkbox"
+                  class="checkbox"
+                  :id="'checkbox-' + fn.name"
+                  :checked="selectedArns.includes(fn.arn)"
+                  :disabled="isOrchestrator(fn.name) || isBlocked"
+                  @change="toggleSelect(fn.arn)"
+                />
+              </td>
+              <td class="td-name">
+                <div class="fn-name font-mono">{{ fn.name }}</div>
+                <div class="fn-arn text-xs text-secondary font-mono">{{ fn.arn }}</div>
+              </td>
+              <td>
+                <span class="runtime-badge" :class="runtimeClass(fn.runtime)">{{ fn.runtime }}</span>
+              </td>
+              <td class="font-mono text-sm text-secondary">{{ fn.region }}</td>
+              <td>
+                <span class="status-indicator" :class="statusClass(fn)">
+                  <span class="status-dot"></span>
+                  {{ statusLabel(fn) }}
+                </span>
+              </td>
+              <td>
+                <span v-if="fn.mode !== 'none'" class="mode-badge" :class="'mode-' + fn.mode">
+                  {{ modeLabel(fn.mode) }}
+                </span>
+                <span v-else class="text-xs text-secondary">—</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- ── Instrument Modal ── -->
@@ -188,11 +215,11 @@
             </div>
             <div class="option-text">
               <strong>Layer-Based</strong>
-              <p>Adds NR layer + extension sidecar. Zero code changes.</p>
+              <p>Adds {{ provider === 'datadog' ? 'Datadog' : 'NR' }} layer + extension sidecar. Zero code changes.</p>
             </div>
             <div class="option-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
           </label>
-          <label class="option-card" :class="{ active: instrumentMethod === 'log_ingestion' }">
+          <label v-if="provider !== 'datadog'" class="option-card" :class="{ active: instrumentMethod === 'log_ingestion' }">
             <input type="radio" name="method" value="log_ingestion" v-model="instrumentMethod" />
             <div class="option-icon option-icon--blue">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -206,7 +233,7 @@
         </div>
       </div>
 
-      <div class="modal-section" v-if="instrumentMethod === 'layer'">
+      <div class="modal-section" v-if="instrumentMethod === 'layer' && provider !== 'datadog'">
         <h3 class="modal-section-label">Mode</h3>
         <div class="option-group">
           <label class="option-card" :class="{ active: instrumentMode === 'serverless' }">
@@ -252,7 +279,9 @@ import { ref, computed, onMounted } from 'vue'
 import ThemedModal from '@/components/ThemedModal.vue'
 import type { LambdaFunction, InstrumentMethod, InstrumentationMode } from '@/types'
 import { api } from '@/services/api'
+import { useConfig } from '@/composables/useConfig'
 
+const { provider } = useConfig()
 const functions = ref<LambdaFunction[]>([])
 const search = ref('')
 const filterStatus = ref('')
@@ -366,12 +395,17 @@ function runtimeClass(runtime: string): string {
 // Map styles for current execution status
 function statusClass(fn: LambdaFunction): string {
   if (isOrchestrator(fn.name)) return 'status-protected'
-  return fn.status === 'instrumented' ? 'status-active' : 'status-none'
+  if (fn.status === 'instrumented') return 'status-active'
+  if (fn.status === 'instrumented_newrelic' || fn.status === 'instrumented_datadog') return 'status-other'
+  return 'status-none'
 }
 
 function statusLabel(fn: LambdaFunction): string {
   if (isOrchestrator(fn.name)) return 'Protected'
-  return fn.status === 'instrumented' ? 'Instrumented' : 'Not Instrumented'
+  if (fn.status === 'instrumented') return 'Instrumented'
+  if (fn.status === 'instrumented_newrelic') return 'New Relic Instrumented'
+  if (fn.status === 'instrumented_datadog') return 'Datadog Instrumented'
+  return 'Not Instrumented'
 }
 
 function modeLabel(mode: InstrumentationMode): string {
@@ -397,8 +431,13 @@ async function doInstrument() {
       mode: instrumentMethod.value === 'layer' ? instrumentMode.value : 'serverless'
     }
     
-    await api.installFunctions(payload)
-    selectedArns.value = []
+    const results = await api.installFunctions(payload)
+    const failures = results.filter(r => !r.success)
+    if (failures.length > 0) {
+      errorMessage.value = failures.map(f => `${f.functionName}: ${f.error}`).join('; ')
+    } else {
+      selectedArns.value = []
+    }
     
     // Invalidate state and re-sync
     await fetchFunctions()
@@ -420,8 +459,13 @@ async function doUninstrument() {
       functionArns: selectedInstrumentedArns.value
     }
     
-    await api.uninstallFunctions(payload)
-    selectedArns.value = []
+    const results = await api.uninstallFunctions(payload)
+    const failures = results.filter(r => !r.success)
+    if (failures.length > 0) {
+      errorMessage.value = failures.map(f => `${f.functionName}: ${f.error}`).join('; ')
+    } else {
+      selectedArns.value = []
+    }
     
     // Invalidate state and re-sync
     await fetchFunctions()
@@ -800,10 +844,12 @@ async function doUninstrument() {
 .status-active .status-dot { background: var(--accent); }
 .status-none .status-dot { border: 1.5px solid var(--text-tertiary); background: transparent; }
 .status-protected .status-dot { background: var(--warning); }
+.status-other .status-dot { background: #a78bfa; }
 
 .status-active { color: var(--accent); }
 .status-none { color: var(--text-tertiary); }
 .status-protected { color: var(--warning); }
+.status-other { color: #a78bfa; }
 
 /* ── Mode Badge ── */
 .mode-badge {

@@ -7,8 +7,8 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/db"
-	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/types"
+	"github.com/vectorsight/serverless-tool/backend/internal/db"
+	"github.com/vectorsight/serverless-tool/backend/internal/types"
 )
 
 type credentialsRequest struct {

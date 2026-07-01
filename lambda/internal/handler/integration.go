@@ -14,12 +14,13 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 
-	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/awsclient"
-	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/newrelic"
-	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/types"
+	"github.com/vectorsight/serverless-tool/lambda/internal/awsclient"
+	"github.com/vectorsight/serverless-tool/lambda/internal/datadog"
+	"github.com/vectorsight/serverless-tool/lambda/internal/newrelic"
+	"github.com/vectorsight/serverless-tool/lambda/internal/types"
 )
 
-// HandleIntegrationStatus returns the current NR integration status.
+// HandleIntegrationStatus returns the current NR/DD integration status.
 //
 // GET /integration/status
 func HandleIntegrationStatus(
@@ -35,7 +36,13 @@ func HandleIntegrationStatus(
 		return errorResponse(400, err.Error())
 	}
 
-	status, err := newrelic.GetIntegrationStatus(ctx, clients, cfg)
+	var status *types.IntegrationStatusResponse
+	if cfg.SelectedProvider == "datadog" {
+		status, err = datadog.GetIntegrationStatus(ctx, clients, cfg)
+	} else {
+		status, err = newrelic.GetIntegrationStatus(ctx, clients, cfg)
+	}
+
 	if err != nil {
 		return errorResponse(500, "Failed to check integration status: "+err.Error())
 	}
@@ -43,7 +50,7 @@ func HandleIntegrationStatus(
 	return jsonResponse(200, status)
 }
 
-// HandleIntegrationSetup deploys the NR integration CF stack.
+// HandleIntegrationSetup deploys the NR/DD integration CF stack.
 //
 // POST /integration/setup
 // Body: { "method": "metric_streams"|"api_polling", "includeLogs": true|false }
@@ -69,7 +76,13 @@ func HandleIntegrationSetup(
 		return errorResponse(400, err.Error())
 	}
 
-	resp, err := newrelic.SetupIntegration(ctx, clients, cfg, &req)
+	var resp *types.IntegrationSetupResponse
+	if cfg.SelectedProvider == "datadog" {
+		resp, err = datadog.SetupIntegration(ctx, clients, cfg, &req)
+	} else {
+		resp, err = newrelic.SetupIntegration(ctx, clients, cfg, &req)
+	}
+
 	if err != nil {
 		return errorResponse(500, "Failed to setup integration: "+err.Error())
 	}
@@ -77,7 +90,7 @@ func HandleIntegrationSetup(
 	return jsonResponse(200, resp)
 }
 
-// HandleIntegrationRemove deletes the NR integration CF stack.
+// HandleIntegrationRemove deletes the NR/DD integration CF stack.
 //
 // POST /integration/remove
 func HandleIntegrationRemove(
@@ -93,7 +106,12 @@ func HandleIntegrationRemove(
 		return errorResponse(400, err.Error())
 	}
 
-	err = newrelic.RemoveIntegration(ctx, clients, cfg)
+	if cfg.SelectedProvider == "datadog" {
+		err = datadog.RemoveIntegration(ctx, clients, cfg)
+	} else {
+		err = newrelic.RemoveIntegration(ctx, clients, cfg)
+	}
+
 	if err != nil {
 		return errorResponse(500, "Failed to remove integration: "+err.Error())
 	}

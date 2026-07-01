@@ -6,18 +6,20 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/auth"
-	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/db"
-	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/types"
+	"github.com/vectorsight/serverless-tool/backend/internal/auth"
+	"github.com/vectorsight/serverless-tool/backend/internal/db"
+	"github.com/vectorsight/serverless-tool/backend/internal/types"
 )
 
 type preferencesResponse struct {
 	SelectedProvider string `json:"selectedProvider"`
 	NRAccountID      string `json:"nrAccountId"`
 	NRRegion         string `json:"nrRegion"`
+	DDSite           string `json:"ddSite"`
 	LambdaAPIURL     string `json:"lambdaApiUrl"`
 	HasNRApiKey      bool   `json:"hasNrApiKey"`
 	HasNRLicenseKey  bool   `json:"hasNrLicenseKey"`
+	HasDDApiKey      bool   `json:"hasDdApiKey"`
 	HasLambdaAPIKey  bool   `json:"hasLambdaApiKey"`
 }
 
@@ -43,12 +45,14 @@ func HandleGetPreferences(dbClient *db.DB) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(preferencesResponse{
-			SelectedProvider: "newrelic",
+			SelectedProvider: prefs.SelectedProvider,
 			NRAccountID:      prefs.NRAccountID,
 			NRRegion:         prefs.NRRegion,
+			DDSite:           prefs.DDSite,
 			LambdaAPIURL:     prefs.LambdaAPIURL,
 			HasNRApiKey:      prefs.NRApiKey != "",
 			HasNRLicenseKey:  prefs.NRLicenseKey != "",
+			HasDDApiKey:      prefs.DDApiKey != "",
 			HasLambdaAPIKey:  prefs.LambdaAPIKey != "",
 		})
 	}
@@ -81,9 +85,15 @@ func HandleSavePreferences(dbClient *db.DB) http.HandlerFunc {
 		incoming.NRApiKey = strings.TrimSpace(incoming.NRApiKey)
 		incoming.NRLicenseKey = strings.TrimSpace(incoming.NRLicenseKey)
 		incoming.NRRegion = strings.ToLower(strings.TrimSpace(incoming.NRRegion))
+		incoming.DDApiKey = strings.TrimSpace(incoming.DDApiKey)
+		incoming.DDSite = strings.ToLower(strings.TrimSpace(incoming.DDSite))
+		incoming.SelectedProvider = strings.ToLower(strings.TrimSpace(incoming.SelectedProvider))
 
 		if incoming.NRRegion == "" {
 			incoming.NRRegion = "us"
+		}
+		if incoming.SelectedProvider == "" {
+			incoming.SelectedProvider = "newrelic"
 		}
 
 		// Retrieve existing preferences to prevent wiping out unprovided secrets
@@ -99,6 +109,9 @@ func HandleSavePreferences(dbClient *db.DB) http.HandlerFunc {
 		}
 		if incoming.NRLicenseKey == "" {
 			incoming.NRLicenseKey = existing.NRLicenseKey
+		}
+		if incoming.DDApiKey == "" {
+			incoming.DDApiKey = existing.DDApiKey
 		}
 		if incoming.LambdaAPIKey == "" {
 			incoming.LambdaAPIKey = existing.LambdaAPIKey

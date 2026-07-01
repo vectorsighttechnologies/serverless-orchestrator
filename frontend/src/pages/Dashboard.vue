@@ -94,7 +94,7 @@
     </nav>
 
     <!-- Tab Content -->
-    <div class="tab-content" :key="activeRegionIndex">
+    <div class="tab-content" :key="activeRegionIndex + '-' + refreshCounter">
       <InstrumentationTab v-if="activeTab === 'instrumentation'" />
       <IntegrationTab v-if="activeTab === 'integration'" />
     </div>
@@ -121,6 +121,7 @@ const {
 } = useConfig()
 
 const activeTab = ref<'instrumentation' | 'integration'>('instrumentation')
+const refreshCounter = ref(0)
 
 const connectionLabel = computed(() => {
   if (activeRegion.value) {
@@ -149,7 +150,7 @@ function handleConnectionChange(e: Event) {
 }
 
 function refreshData() {
-  // In real app, re-fetch functions and integration data
+  refreshCounter.value++
 }
 
 function handleLogout() {

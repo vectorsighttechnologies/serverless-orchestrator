@@ -19,7 +19,7 @@ func Load() (*Config, error) {
 	cfg := &Config{
 		Port:          envOrDefault("X_ZOHO_CATALYST_LISTEN_PORT", "9000"),
 		DBDriver:      envOrDefault("DB_DRIVER", "sqlite"),
-		DatabaseURL:   envOrDefault("DATABASE_URL", "serverless_orchestrator.db"),
+		DatabaseURL:   envOrDefault("DATABASE_URL", "serverless_tool.db"),
 		EncryptionKey: os.Getenv("ENCRYPTION_KEY"),
 		JWTSecret:     os.Getenv("JWT_SECRET"),
 	}

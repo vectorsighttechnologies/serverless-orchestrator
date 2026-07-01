@@ -8,10 +8,10 @@ import (
 
 	"github.com/patrickmn/go-cache"
 
-	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/auth"
-	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/db"
-	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/lambda"
-	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/types"
+	"github.com/vectorsight/serverless-tool/backend/internal/auth"
+	"github.com/vectorsight/serverless-tool/backend/internal/db"
+	"github.com/vectorsight/serverless-tool/backend/internal/lambda"
+	"github.com/vectorsight/serverless-tool/backend/internal/types"
 )
 
 // HandleIntegrationStatus retrieves current integration status from orchestrator, using TTL cache.
@@ -141,7 +141,7 @@ func HandleIntegrationSetup(
 		}
 
 		// Invalidate status cache
-		memCache.Delete("integration-status-" + userID)
+		memCache.Delete("integration-status-" + userID + "-" + lambdaUrl)
 
 		// Audit Log
 		_ = dbClient.CreateAuditLog(userID, "setup_integration", req.Method, "success", fmt.Sprintf("Setup initiated: logs=%v", req.IncludeLogs))
@@ -198,7 +198,7 @@ func HandleIntegrationRemove(
 		}
 
 		// Invalidate status cache
-		memCache.Delete("integration-status-" + userID)
+		memCache.Delete("integration-status-" + userID + "-" + lambdaUrl)
 
 		// Audit Log
 		_ = dbClient.CreateAuditLog(userID, "remove_integration", "stack", "success", "Removal initiated")

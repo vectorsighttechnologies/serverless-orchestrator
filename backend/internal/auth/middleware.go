@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/types"
+	"github.com/vectorsight/serverless-tool/backend/internal/types"
 )
 
 type contextKey string

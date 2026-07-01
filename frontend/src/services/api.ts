@@ -109,9 +109,11 @@ class ApiClient {
         selectedProvider: string
         nrAccountId: string
         nrRegion: string
+        ddSite: string
         lambdaApiUrl: string
         hasNrApiKey: boolean
         hasNrLicenseKey: boolean
+        hasDdApiKey: boolean
         hasLambdaApiKey: boolean
     }> {
         return this.request('GET', '/user/preferences')
@@ -123,6 +125,8 @@ class ApiClient {
         nrApiKey?: string
         nrLicenseKey?: string
         nrRegion: string
+        ddApiKey?: string
+        ddSite?: string
         lambdaApiUrl: string
         lambdaApiKey?: string
     }): Promise<{ message: string }> {

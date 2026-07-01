@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue'
-import type { Provider, RegionConfig, NRCredentials, ConfigSource } from '@/types'
+import type { Provider, RegionConfig, NRCredentials, DDCredentials, ConfigSource } from '@/types'
 import { api } from '@/services/api'
 
 const provider = ref<Provider | null>(null)
@@ -13,6 +13,10 @@ const nrCredentials = ref<NRCredentials>({
     accountId: '',
     apiKey: '',
     region: 'us',
+})
+const ddCredentials = ref<DDCredentials>({
+    apiKey: '',
+    site: 'datadoghq.com',
 })
 const configSource = ref<ConfigSource>('none')
 const isConnected = ref(false)
@@ -96,6 +100,7 @@ function logout() {
     pendingRegions.value = [{ region: 'us-east-1', apiGatewayUrl: '', apiKey: '' }]
     activeRegionIndex.value = 0
     nrCredentials.value = { licenseKey: '', accountId: '', apiKey: '', region: 'us' }
+    ddCredentials.value = { apiKey: '', site: 'datadoghq.com' }
     configSource.value = 'none'
     isConnected.value = false
     isAuthenticated.value = false
@@ -115,6 +120,8 @@ function saveToSession() {
     sessionStorage.setItem('lip_authenticated', String(isAuthenticated.value))
     sessionStorage.setItem('lip_userEmail', userEmail.value)
     sessionStorage.setItem('lip_backendUrl', backendUrl.value)
+    sessionStorage.setItem('lip_nrCredentials', JSON.stringify(nrCredentials.value))
+    sessionStorage.setItem('lip_ddCredentials', JSON.stringify(ddCredentials.value))
     if (token.value) {
         sessionStorage.setItem('lip_token', token.value)
     }
@@ -158,6 +165,12 @@ function loadFromSession() {
         api.configure(savedBackendUrl)
     }
 
+    const savedNrCreds = sessionStorage.getItem('lip_nrCredentials')
+    if (savedNrCreds) nrCredentials.value = JSON.parse(savedNrCreds)
+
+    const savedDdCreds = sessionStorage.getItem('lip_ddCredentials')
+    if (savedDdCreds) ddCredentials.value = JSON.parse(savedDdCreds)
+
     const savedToken = sessionStorage.getItem('lip_token')
     if (savedToken) {
         token.value = savedToken
@@ -175,6 +188,10 @@ async function loadPreferencesFromDB() {
             accountId: prefs.nrAccountId || '',
             apiKey: prefs.hasNrApiKey ? '••••••••' : '',
             region: (prefs.nrRegion as any) || 'us',
+        }
+        ddCredentials.value = {
+            apiKey: prefs.hasDdApiKey ? '••••••••' : '',
+            site: prefs.ddSite || 'datadoghq.com',
         }
 
         // Load multiple AWS connections
@@ -209,6 +226,7 @@ export function useConfig() {
         activeRegionIndex,
         activeRegion,
         nrCredentials,
+        ddCredentials,
         configSource,
         isConnected,
         isAuthenticated,

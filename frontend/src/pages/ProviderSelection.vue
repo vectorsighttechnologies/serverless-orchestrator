@@ -139,8 +139,12 @@
             </div>
           </button>
 
-          <!-- ── Datadog (Coming Soon) ── -->
-          <div class="provider-card provider-card--datadog" id="provider-datadog">
+          <!-- ── Datadog ── -->
+          <button
+            class="provider-card provider-card--datadog"
+            @click="selectProvider('datadog')"
+            id="provider-datadog"
+          >
             <div class="card-glow card-glow--purple"></div>
             <div class="card-top">
               <div class="card-logo">
@@ -149,7 +153,10 @@
                   <path d="M13 21l5 5 9-11" stroke="#9b72d4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </div>
-              <span class="card-badge card-badge--soon">Coming Soon</span>
+              <span class="card-badge card-badge--available" style="background: rgba(99, 44, 166, 0.15); border-color: rgba(99, 44, 166, 0.35); color: #c4b5fd;">
+                <span class="card-badge-dot" style="background: #a78bfa; box-shadow: 0 0 4px #a78bfa;"></span>
+                Available
+              </span>
             </div>
 
             <div class="card-body">
@@ -160,32 +167,32 @@
               </p>
             </div>
 
-            <ul class="card-features card-features--muted">
+            <ul class="card-features">
               <li>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/></svg>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
                 Datadog Lambda extension
               </li>
               <li>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/></svg>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
                 Enhanced Lambda metrics
               </li>
               <li>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/></svg>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
                 Log management &amp; APM traces
               </li>
               <li>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/></svg>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
                 Serverless monitoring
               </li>
             </ul>
 
             <div class="card-action">
-              <button class="notify-btn" @click.stop="handleNotifyMe" id="btn-notify-datadog">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
-                Notify Me
-              </button>
+              <span class="btn btn-secondary card-cta" style="border-color: rgba(99, 44, 166, 0.4); background: rgba(99, 44, 166, 0.1); color: #c4b5fd;">
+                Select Datadog
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </span>
             </div>
-          </div>
+          </button>
 
         </div>
 
@@ -229,24 +236,11 @@ const toast = ref<Toast>({
   message: '',
 })
 
-let toastTimer: ReturnType<typeof setTimeout> | null = null
-
-function showToast(type: Toast['type'], title: string, message: string) {
-  if (toastTimer) clearTimeout(toastTimer)
-  toast.value = { show: true, type, title, message }
-  toastTimer = setTimeout(() => {
-    toast.value.show = false
-  }, 4000)
-}
-
 function dismissToast() {
-  if (toastTimer) clearTimeout(toastTimer)
   toast.value.show = false
 }
 
-function handleNotifyMe() {
-  showToast('info', "You're on the list!", "We'll notify you as soon as Datadog support launches.")
-}
+
 </script>
 
 <style scoped>

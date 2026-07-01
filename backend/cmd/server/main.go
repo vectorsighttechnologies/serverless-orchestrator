@@ -7,12 +7,12 @@ import (
 
 	"github.com/patrickmn/go-cache"
 
-	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/auth"
-	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/config"
-	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/db"
-	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/handler"
-	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/lambda"
-	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/middleware"
+	"github.com/vectorsight/serverless-tool/backend/internal/auth"
+	"github.com/vectorsight/serverless-tool/backend/internal/config"
+	"github.com/vectorsight/serverless-tool/backend/internal/db"
+	"github.com/vectorsight/serverless-tool/backend/internal/handler"
+	"github.com/vectorsight/serverless-tool/backend/internal/lambda"
+	"github.com/vectorsight/serverless-tool/backend/internal/middleware"
 )
 
 func main() {

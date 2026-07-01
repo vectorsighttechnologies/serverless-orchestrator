@@ -12,8 +12,8 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 
-	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/config"
-	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/types"
+	"github.com/vectorsight/serverless-tool/lambda/internal/config"
+	"github.com/vectorsight/serverless-tool/lambda/internal/types"
 )
 
 // jsonResponse creates a successful API Gateway response with JSON body.

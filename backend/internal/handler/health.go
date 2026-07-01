@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/db"
-	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/types"
+	"github.com/vectorsight/serverless-tool/backend/internal/db"
+	"github.com/vectorsight/serverless-tool/backend/internal/types"
 )
 
 // HandleHealth check checks the database ping and config availability.

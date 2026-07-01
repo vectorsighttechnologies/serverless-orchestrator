@@ -104,10 +104,13 @@ type IntegrationSetupResponse struct {
 
 // UserPreferences holds credential and Lambda target configuration.
 type UserPreferences struct {
-	NRAccountID  string `json:"nrAccountId,omitempty"`
+	SelectedProvider string `json:"selectedProvider,omitempty"`
+	NRAccountID      string `json:"nrAccountId,omitempty"`
 	NRApiKey     string `json:"nrApiKey,omitempty"`
 	NRLicenseKey string `json:"nrLicenseKey,omitempty"`
 	NRRegion     string `json:"nrRegion,omitempty"`     // "us" or "eu"
+	DDApiKey     string `json:"ddApiKey,omitempty"`
+	DDSite       string `json:"ddSite,omitempty"`
 	LambdaAPIURL string `json:"lambdaApiUrl,omitempty"` // URL of the deployed Lambda
 	LambdaAPIKey string `json:"lambdaApiKey,omitempty"` // API Gateway API key
 }

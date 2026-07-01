@@ -1,6 +1,7 @@
 // Package newrelic — layers.go
 //
 // Layer discovery from layers.newrelic-external.com + layer selection logic.
+// Ported from: newrelic_lambda_cli/layers.py :: index(), layer_selection()
 package newrelic
 
 import (
@@ -10,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/types"
+	"github.com/vectorsight/serverless-tool/lambda/internal/types"
 )
 
 // httpClient is reused across calls (connection pooling, keep-alive).
@@ -21,6 +22,7 @@ var httpClient = &http.Client{
 // DiscoverLayers fetches available NR Lambda layers for the given region,
 // runtime, and architecture from the NR layer registry.
 //
+// Ported from: layers.py :: index(region, runtime, architecture)
 func DiscoverLayers(region, runtime, architecture string) ([]types.LayerInfo, error) {
 	url := fmt.Sprintf(LayerRegistryURL, region, runtime)
 
@@ -39,12 +41,12 @@ func DiscoverLayers(region, runtime, architecture string) ([]types.LayerInfo, er
 		return nil, fmt.Errorf("failed to decode NR layer registry response: %w", err)
 	}
 
-	// Filter by architecture compatibility
+	// Filter by architecture — mirrors the Python CLI logic
 	var compatible []types.LayerInfo
 	for _, layer := range registry.Layers {
 		archs := layer.LatestMatchingVersion.CompatibleArchitectures
 		if len(archs) == 0 {
-			archs = []string{"x86_64"} // Default to x86_64
+			archs = []string{"x86_64"} // default same as Python CLI
 		}
 		for _, a := range archs {
 			if a == architecture {
@@ -58,7 +60,9 @@ func DiscoverLayers(region, runtime, architecture string) ([]types.LayerInfo, er
 }
 
 // SelectLayer picks the best layer ARN from available layers.
-// Since this is run as an API service, we auto-select the best matching layer:
+//
+// Ported from: layers.py :: layer_selection()
+// Since we're an API (not interactive CLI), we always auto-select:
 //   - If upgrading, prefer the layer matching the existing base ARN
 //   - Otherwise, pick the first available layer
 func SelectLayer(layers []types.LayerInfo, existingLayerARN string, upgrade bool) (string, error) {
@@ -92,6 +96,7 @@ func stripVersion(arn string) string {
 
 // GetARNPrefix returns the NR layer ARN prefix for a given region.
 // Used to detect existing NR layers on a function.
+// Ported from: utils.py :: get_arn_prefix()
 func GetARNPrefix(region string) string {
 	return fmt.Sprintf(LayerARNPrefix, region)
 }

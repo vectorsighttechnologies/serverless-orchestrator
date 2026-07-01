@@ -70,7 +70,7 @@ package-obfuscated: build-obfuscated
 deploy: package
 	sam deploy \
 		--template-file template.yaml \
-		--stack-name serverless-orchestrator \
+		--stack-name lambda-instrumentation-platform \
 		--capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
 		--resolve-s3
 

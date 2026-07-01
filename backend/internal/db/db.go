@@ -14,7 +14,7 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
-	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/types"
+	"github.com/vectorsight/serverless-tool/backend/internal/types"
 	_ "modernc.org/sqlite"
 )
 
@@ -114,6 +114,24 @@ func (d *DB) migrate() error {
 		if _, err := d.SQLDB.Exec(q); err != nil {
 			return err
 		}
+	}
+
+	_ = d.addColumnIfNotExists("user_preferences", "selected_provider", "VARCHAR(50) DEFAULT 'newrelic'")
+	_ = d.addColumnIfNotExists("user_preferences", "dd_api_key_encrypted", "TEXT")
+	_ = d.addColumnIfNotExists("user_preferences", "dd_site", "VARCHAR(50)")
+
+	return nil
+}
+
+func (d *DB) addColumnIfNotExists(table, column, colType string) error {
+	query := fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s", table, column, colType)
+	_, err := d.SQLDB.Exec(query)
+	if err != nil {
+		errStr := strings.ToLower(err.Error())
+		if strings.Contains(errStr, "duplicate column") || strings.Contains(errStr, "already exists") {
+			return nil
+		}
+		return err
 	}
 	return nil
 }
@@ -215,21 +233,24 @@ func (d *DB) GetUserByEmail(email string) (string, string, error) {
 // GetUserPreferences fetches user configs and decrypts parameters.
 func (d *DB) GetUserPreferences(userID string) (*types.UserPreferences, error) {
 	var (
+		selectedProvider         sql.NullString
 		nrAccountID              sql.NullString
 		nrApiKeyEncrypted        sql.NullString
 		nrLicenseKeyEncrypted    sql.NullString
 		nrRegion                 sql.NullString
+		ddApiKeyEncrypted        sql.NullString
+		ddSite                   sql.NullString
 		lambdaApiUrlEncrypted    sql.NullString
 		lambdaApiKeyEncrypted    sql.NullString
 	)
 
-	query := `SELECT nr_account_id, nr_api_key_encrypted, nr_license_key_encrypted, 
-	                 nr_region, lambda_api_url_encrypted, lambda_api_key_encrypted 
+	query := `SELECT selected_provider, nr_account_id, nr_api_key_encrypted, nr_license_key_encrypted, 
+	                 nr_region, dd_api_key_encrypted, dd_site, lambda_api_url_encrypted, lambda_api_key_encrypted 
 	          FROM user_preferences WHERE user_id = $1`
 
 	err := d.SQLDB.QueryRow(query, userID).Scan(
-		&nrAccountID, &nrApiKeyEncrypted, &nrLicenseKeyEncrypted,
-		&nrRegion, &lambdaApiUrlEncrypted, &lambdaApiKeyEncrypted,
+		&selectedProvider, &nrAccountID, &nrApiKeyEncrypted, &nrLicenseKeyEncrypted,
+		&nrRegion, &ddApiKeyEncrypted, &ddSite, &lambdaApiUrlEncrypted, &lambdaApiKeyEncrypted,
 	)
 
 	if err == sql.ErrNoRows {
@@ -242,16 +263,25 @@ func (d *DB) GetUserPreferences(userID string) (*types.UserPreferences, error) {
 	// Decrypt sensitive credentials
 	nrApiKey, _ := d.Decrypt(nrApiKeyEncrypted.String)
 	nrLicenseKey, _ := d.Decrypt(nrLicenseKeyEncrypted.String)
+	ddApiKey, _ := d.Decrypt(ddApiKeyEncrypted.String)
 	lambdaApiUrl, _ := d.Decrypt(lambdaApiUrlEncrypted.String)
 	lambdaApiKey, _ := d.Decrypt(lambdaApiKeyEncrypted.String)
 
+	provider := selectedProvider.String
+	if provider == "" {
+		provider = "newrelic"
+	}
+
 	return &types.UserPreferences{
-		NRAccountID:  nrAccountID.String,
-		NRApiKey:     nrApiKey,
-		NRLicenseKey: nrLicenseKey,
-		NRRegion:     nrRegion.String,
-		LambdaAPIURL: lambdaApiUrl,
-		LambdaAPIKey: lambdaApiKey,
+		SelectedProvider: provider,
+		NRAccountID:      nrAccountID.String,
+		NRApiKey:         nrApiKey,
+		NRLicenseKey:     nrLicenseKey,
+		NRRegion:         nrRegion.String,
+		DDApiKey:         ddApiKey,
+		DDSite:           ddSite.String,
+		LambdaAPIURL:     lambdaApiUrl,
+		LambdaAPIKey:     lambdaApiKey,
 	}, nil
 }
 
@@ -265,6 +295,10 @@ func (d *DB) SaveUserPreferences(userID string, prefs *types.UserPreferences) er
 	if err != nil {
 		return err
 	}
+	ddApiKeyEncrypted, err := d.Encrypt(prefs.DDApiKey)
+	if err != nil {
+		return err
+	}
 	lambdaApiUrlEncrypted, err := d.Encrypt(prefs.LambdaAPIURL)
 	if err != nil {
 		return err
@@ -272,6 +306,11 @@ func (d *DB) SaveUserPreferences(userID string, prefs *types.UserPreferences) er
 	lambdaApiKeyEncrypted, err := d.Encrypt(prefs.LambdaAPIKey)
 	if err != nil {
 		return err
+	}
+
+	provider := prefs.SelectedProvider
+	if provider == "" {
+		provider = "newrelic"
 	}
 
 	// Check if preferences already exist for user to decide INSERT or UPDATE (upsert)
@@ -285,22 +324,26 @@ func (d *DB) SaveUserPreferences(userID string, prefs *types.UserPreferences) er
 	if count > 0 {
 		query = `UPDATE user_preferences 
 		         SET selected_provider = $1, nr_account_id = $2, nr_api_key_encrypted = $3, 
-		             nr_license_key_encrypted = $4, nr_region = $5, lambda_api_url_encrypted = $6, 
-		             lambda_api_key_encrypted = $7, updated_at = $8 
-		         WHERE user_id = $9`
+		             nr_license_key_encrypted = $4, nr_region = $5, dd_api_key_encrypted = $6,
+		             dd_site = $7, lambda_api_url_encrypted = $8, lambda_api_key_encrypted = $9, 
+		             updated_at = $10 
+		         WHERE user_id = $11`
 		_, err = d.SQLDB.Exec(query,
-			"newrelic", prefs.NRAccountID, nrApiKeyEncrypted,
-			nrLicenseKeyEncrypted, prefs.NRRegion, lambdaApiUrlEncrypted,
-			lambdaApiKeyEncrypted, time.Now(), userID,
+			provider, prefs.NRAccountID, nrApiKeyEncrypted,
+			nrLicenseKeyEncrypted, prefs.NRRegion, ddApiKeyEncrypted,
+			prefs.DDSite, lambdaApiUrlEncrypted, lambdaApiKeyEncrypted,
+			time.Now(), userID,
 		)
 	} else {
 		query = `INSERT INTO user_preferences 
 		         (user_id, selected_provider, nr_account_id, nr_api_key_encrypted, 
-		          nr_license_key_encrypted, nr_region, lambda_api_url_encrypted, lambda_api_key_encrypted) 
-		         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
+		          nr_license_key_encrypted, nr_region, dd_api_key_encrypted, dd_site, 
+		          lambda_api_url_encrypted, lambda_api_key_encrypted) 
+		         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 		_, err = d.SQLDB.Exec(query,
-			userID, "newrelic", prefs.NRAccountID, nrApiKeyEncrypted,
-			nrLicenseKeyEncrypted, prefs.NRRegion, lambdaApiUrlEncrypted, lambdaApiKeyEncrypted,
+			userID, provider, prefs.NRAccountID, nrApiKeyEncrypted,
+			nrLicenseKeyEncrypted, prefs.NRRegion, ddApiKeyEncrypted, prefs.DDSite,
+			lambdaApiUrlEncrypted, lambdaApiKeyEncrypted,
 		)
 	}
 

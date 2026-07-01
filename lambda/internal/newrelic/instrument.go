@@ -1,7 +1,8 @@
 // Package newrelic — instrument.go
 //
 // Layer-based instrumentation: install and uninstall.
-//   - Layer-based instrumentation logic.
+// This is the heart of the platform — ported from:
+//   - newrelic_lambda_cli/layers.py :: _add_new_relic(), install(), _remove_new_relic(), uninstall()
 //
 // SOLID principles applied:
 //   - Single Responsibility: Only handles layer install/uninstall, not routing or config
@@ -19,12 +20,13 @@ import (
 	lambdasvc "github.com/aws/aws-sdk-go-v2/service/lambda"
 	lambdatypes "github.com/aws/aws-sdk-go-v2/service/lambda/types"
 
-	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/awsclient"
-	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/config"
+	"github.com/vectorsight/serverless-tool/lambda/internal/awsclient"
+	"github.com/vectorsight/serverless-tool/lambda/internal/config"
 )
 
 // InstallLayer instruments a single Lambda function with the NR layer.
 //
+// Logic ported from: layers.py :: install() + _add_new_relic()
 //
 // Steps:
 //  1. Get current function configuration
@@ -205,6 +207,7 @@ func InstallLayer(
 
 // UninstallLayer removes NR instrumentation from a Lambda function.
 //
+// Logic ported from: layers.py :: uninstall() + _remove_new_relic()
 //
 // Steps:
 //  1. Get current function config
@@ -247,7 +250,7 @@ func UninstallLayer(
 	}
 
 	// Step 2: Remove NR layers
-	var nonNRLayers []string
+	nonNRLayers := []string{}
 	for _, layer := range funcConfig.Configuration.Layers {
 		arn := aws.ToString(layer.Arn)
 		if !IsNRLayer(arn, region) {
@@ -342,6 +345,7 @@ func isNRHandler(runtime, handler string) bool {
 
 // attachSecretsManagerPolicy attaches the AWSLambdaBasicExecutionRole
 // policy for Secrets Manager access to the function's IAM role.
+// Ported from: layers.py :: _attach_license_key_policy()
 func attachSecretsManagerPolicy(ctx context.Context, clients *awsclient.Factory, roleARN string) error {
 	iamClient, err := clients.IAM(ctx)
 	if err != nil {
@@ -361,6 +365,7 @@ func attachSecretsManagerPolicy(ctx context.Context, clients *awsclient.Factory,
 }
 
 // detachSecretsManagerPolicy removes the Secrets Manager policy from the role.
+// Ported from: layers.py :: _detach_license_key_policy()
 func detachSecretsManagerPolicy(ctx context.Context, clients *awsclient.Factory, roleARN string) error {
 	iamClient, err := clients.IAM(ctx)
 	if err != nil {

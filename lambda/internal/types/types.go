@@ -13,11 +13,14 @@ type HealthResponse struct {
 	Config ConfigStatus `json:"config"`
 }
 
-// ConfigStatus indicates which NR credentials are configured on the orchestrator.
+// ConfigStatus indicates which credentials are configured on the orchestrator.
 type ConfigStatus struct {
+	SelectedProvider     string `json:"selectedProvider,omitempty"`
 	LicenseKeyConfigured bool   `json:"licenseKeyConfigured"`
 	AccountIDConfigured  bool   `json:"accountIdConfigured"`
 	APIKeyConfigured     bool   `json:"apiKeyConfigured"`
+	DDApiKeyConfigured   bool   `json:"ddApiKeyConfigured"`
+	DDSiteConfigured     bool   `json:"ddSiteConfigured"`
 	Region               string `json:"region"`
 	Source               string `json:"source"` // "env_vars" | "request" | "none"
 }
@@ -116,7 +119,8 @@ type LayerRegistryResponse struct {
 	Layers []LayerInfo `json:"Layers"`
 }
 
-// RuntimeInfo holds configuration parameters for the wrapping handler and extension status.
+// RuntimeInfo holds the handler wrapping config for a specific Lambda runtime.
+// Ported from Python CLI's utils.RUNTIME_CONFIG.
 type RuntimeInfo struct {
 	Handler          string // New handler value (empty = no wrapping needed)
 	HasExtension     bool   // Whether the NR Lambda Extension is supported

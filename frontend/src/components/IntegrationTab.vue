@@ -40,7 +40,53 @@
 
     <!-- Setup Form (only if not setup) -->
     <div v-if="integration.status === 'not_setup' || integration.status === 'error'" class="setup-form mt-6">
-      <div class="card-flat">
+      
+      <!-- Datadog AWS Integration Form -->
+      <div v-if="provider === 'datadog'" class="card-flat">
+        <h3 class="setup-title">Setup Datadog AWS Integration</h3>
+        <p class="setup-desc text-secondary text-sm">
+          Connect your AWS account to Datadog for infrastructure-level metrics and system dashboard correlation.
+          This will deploy a CloudFormation stack to provision the secure cross-account role.
+        </p>
+
+        <!-- Error Alert -->
+        <div v-if="integration.status === 'error' && integration.error" class="alert alert-danger mt-4 mb-2">
+          <span class="alert-icon">⚠️</span>
+          <div class="flex-col">
+            <strong style="font-weight: 600;">Integration Setup Failed</strong>
+            <span class="text-xs mt-1" style="word-break: break-word; line-height: 1.4;">{{ integration.error }}</span>
+          </div>
+        </div>
+
+        <div class="method-selector mt-6">
+          <h4 class="modal-section-title">Integration Resources Created</h4>
+          <div class="metric-streams-resources p-5" style="background: var(--bg-tertiary); border: 1px solid var(--border-primary); border-radius: var(--radius-md);">
+            <ul class="resource-list">
+              <li>Datadog cross-account IAM Role (default: <code>DatadogIntegrationRole</code>)</li>
+              <li>Datadog security trust policy delegation</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="alert alert-warning mt-6">
+          ⚠️ Deploys Datadog's official CloudFormation main template to authorize account integration.
+        </div>
+
+        <div class="mt-6 flex gap-3">
+          <button
+            class="btn btn-primary btn-lg"
+            :disabled="isSetup"
+            @click="handleSetup"
+            id="btn-setup-integration"
+          >
+            <span v-if="isSetup" class="spinner"></span>
+            {{ isSetup ? 'Setting up...' : 'Setup Integration' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- New Relic Setup Form -->
+      <div v-else class="card-flat">
         <h3 class="setup-title">Setup New Relic AWS Integration</h3>
         <p class="setup-desc text-secondary text-sm">
           Connect your AWS account to New Relic for infrastructure-level monitoring.
@@ -150,6 +196,9 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { api } from '@/services/api'
 import type { IntegrationInfo, IntegrationMethod } from '@/types'
+import { useConfig } from '@/composables/useConfig'
+
+const { provider } = useConfig()
 
 const integration = ref<IntegrationInfo>({
   status: 'not_setup',

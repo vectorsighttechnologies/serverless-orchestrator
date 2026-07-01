@@ -1,14 +1,14 @@
 // Package newrelic contains the core business logic for Lambda instrumentation.
 //
-// This file defines the runtime configuration map and environment variable constants.
-
-
+// This file defines the runtime configuration map ported directly from
+// the Python CLI's utils.RUNTIME_CONFIG, plus the NR env var constants
+// from layers.NEW_RELIC_ENV_VARS.
 //
 // DRY: All runtime metadata lives here. Both install and uninstall
 // operations reference this single source of truth.
 package newrelic
 
-import "github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/types"
+import "github.com/vectorsight/serverless-tool/lambda/internal/types"
 
 // NR Layer ARN prefix template. The account 451483290750 is New Relic's
 // official layer publishing account.
@@ -19,6 +19,7 @@ const LayerRegistryURL = "https://%s.layers.newrelic-external.com/get-layers?Com
 
 // NREnvVars are the environment variables managed by New Relic instrumentation.
 // During uninstall, only these keys are removed — preserving customer env vars.
+// Ported from: newrelic_lambda_cli/layers.py :: NEW_RELIC_ENV_VARS
 var NREnvVars = []string{
 	"NEW_RELIC_ACCOUNT_ID",
 	"NEW_RELIC_EXTENSION_SEND_EXTENSION_LOGS",
@@ -50,6 +51,7 @@ var DotNetEnvVarKeys = []string{
 }
 
 // RuntimeConfig maps Lambda runtimes to their NR handler wrapper and extension support.
+// Ported from: newrelic_lambda_cli/utils.py :: RUNTIME_CONFIG
 //
 // Rules:
 //   - Handler empty → no handler wrapping needed (e.g., .NET, provided runtimes)

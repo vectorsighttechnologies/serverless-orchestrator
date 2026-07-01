@@ -1,6 +1,7 @@
 // Package newrelic — subscriptions.go
 //
 // CloudWatch log subscription filter management.
+// Ported from: newrelic_lambda_cli/subscriptions.py
 package newrelic
 
 import (
@@ -11,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 
-	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/awsclient"
+	"github.com/vectorsight/serverless-tool/lambda/internal/awsclient"
 )
 
 const (
@@ -20,6 +21,7 @@ const (
 )
 
 // getLogGroupName builds the CloudWatch log group name from a function name or ARN.
+// Ported from: subscriptions.py :: _get_log_group_name()
 func getLogGroupName(functionName string) string {
 	if strings.Contains(functionName, ":") {
 		parts := strings.Split(functionName, ":")
@@ -33,6 +35,7 @@ func getLogGroupName(functionName string) string {
 // CreateLogSubscription creates a CloudWatch log subscription filter
 // for the specified function, pointing to the NR log ingestion Lambda.
 //
+// Ported from: subscriptions.py :: create_log_subscription()
 func CreateLogSubscription(
 	ctx context.Context,
 	clients *awsclient.Factory,
@@ -61,6 +64,7 @@ func CreateLogSubscription(
 
 // RemoveLogSubscription removes the NR log subscription filter.
 //
+// Ported from: subscriptions.py :: remove_log_subscription()
 func RemoveLogSubscription(
 	ctx context.Context,
 	clients *awsclient.Factory,

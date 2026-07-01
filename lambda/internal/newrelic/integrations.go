@@ -1,6 +1,7 @@
 // Package newrelic — integrations.go
 //
 // AWS Integration management via CloudFormation stacks.
+// Ported from: newrelic_lambda_cli/integrations.py
 //
 // Supports two methods:
 //   - Metric Streams (recommended) — deploys NR's official nested CF templates
@@ -18,9 +19,9 @@ import (
 	cftypes "github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 
-	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/awsclient"
-	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/config"
-	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/types"
+	"github.com/vectorsight/serverless-tool/lambda/internal/awsclient"
+	"github.com/vectorsight/serverless-tool/lambda/internal/config"
+	"github.com/vectorsight/serverless-tool/lambda/internal/types"
 )
 
 const (
@@ -39,6 +40,7 @@ const (
 
 // GetIntegrationStatus checks the CF stack status for the NR integration.
 //
+// Ported from: integrations.py :: _get_cf_stack_status()
 func GetIntegrationStatus(
 	ctx context.Context,
 	clients *awsclient.Factory,
@@ -122,8 +124,10 @@ func GetIntegrationStatus(
 				result.Status = "in_progress"
 			default:
 				result.Status = "error"
-				if stack.StackStatusReason != nil {
+				if stack.StackStatusReason != nil && *stack.StackStatusReason != "" {
 					result.Error = *stack.StackStatusReason
+				} else {
+					result.Error = fmt.Sprintf("Stack is in failed state: %s. Please check the AWS CloudFormation Console for details.", status)
 				}
 			}
 
@@ -190,7 +194,7 @@ func SetupIntegration(
 			{ParameterKey: aws.String("NewRelicAPIKey"), ParameterValue: aws.String(cfg.APIKey)},
 			{ParameterKey: aws.String("NewRelicLicenseKey"), ParameterValue: aws.String(cfg.LicenseKey)},
 			{ParameterKey: aws.String("NewRelicRegion"), ParameterValue: aws.String(region)},
-			{ParameterKey: aws.String("IntegrationName"), ParameterValue: aws.String("serverless-orchestrator-metric-streams-" + awsAccountID)},
+			{ParameterKey: aws.String("IntegrationName"), ParameterValue: aws.String("serverless-tool-metric-streams-" + awsAccountID)},
 			{ParameterKey: aws.String("PollingIntegrationSlugs"), ParameterValue: aws.String("lambda")},
 			{ParameterKey: aws.String("MetricCollectionMode"), ParameterValue: aws.String("PUSH")},
 		}
@@ -212,7 +216,7 @@ func SetupIntegration(
 			{ParameterKey: aws.String("NewRelicAccountId"), ParameterValue: aws.String(cfg.AccountID)},
 			{ParameterKey: aws.String("NewRelicAPIKey"), ParameterValue: aws.String(cfg.APIKey)},
 			{ParameterKey: aws.String("NewRelicRegion"), ParameterValue: aws.String(region)},
-			{ParameterKey: aws.String("IntegrationName"), ParameterValue: aws.String("serverless-orchestrator-integration-" + awsAccountID)},
+			{ParameterKey: aws.String("IntegrationName"), ParameterValue: aws.String("serverless-tool-integration-" + awsAccountID)},
 			{ParameterKey: aws.String("PollingIntegrationSlugs"), ParameterValue: aws.String("lambda")},
 		}
 
@@ -305,6 +309,7 @@ func SetupIntegration(
 
 // RemoveIntegration deletes the NR integration CF stack and unlinks it from New Relic.
 //
+// Ported from: integrations.py :: remove_integration_role()
 func RemoveIntegration(
 	ctx context.Context,
 	clients *awsclient.Factory,
@@ -417,7 +422,7 @@ func checkAndLinkAccount(ctx context.Context, cfg *config.Config, roleArn string
 	}
 
 	// Establish link
-	linkName := "serverless-orchestrator-aws-" + awsAccountID
+	linkName := "serverless-tool-aws-" + awsAccountID
 	mode := "PULL"
 	if method == "metric_streams" {
 		mode = "PUSH"

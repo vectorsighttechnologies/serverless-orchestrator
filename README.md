@@ -7,7 +7,7 @@
 <h3 align="center">Serverless Orchestrator</h3>
 
 <p align="center">
-  A premium, self-hosted platform designed to automate AWS Lambda instrumentation, configure telemetry, and manage New Relic observability across accounts and regions.
+  A premium, self-hosted platform designed to automate AWS Lambda instrumentation, configure telemetry, and manage New Relic and Datadog observability across accounts and regions.
 </p>
 
 <p align="center">
@@ -29,7 +29,7 @@
 
 ## 🎯 What is Serverless Orchestrator?
 
-Managing serverless observability at scale can be challenging. **Serverless Orchestrator** is a lightweight, secure tool that handles the complex AWS configuration, New Relic account linking, and Lambda layer management for you. 
+Managing serverless observability at scale can be challenging. **Serverless Orchestrator** is a lightweight, secure tool that handles the complex AWS configuration, New Relic & Datadog account linking, and Lambda layer management for you. 
 
 Instead of configuring settings file-by-file or writing custom CLI commands, you get an interactive dashboard UI to manage all operations concurrently.
 
@@ -40,9 +40,9 @@ Instead of configuring settings file-by-file or writing custom CLI commands, you
 | Feature | Description | Interactive Status |
 | :--- | :--- | :---: |
 | **Multi-Connection Dashboard** | Register and switch between different AWS regions and account credentials instantly. | 🟢 Ready |
-| **Bulk Instrumentation** | Attach/detach telemetry layers to dozens of Lambda functions concurrently. | 🟢 Ready |
-| **Automated Account Linking** | Resolves IAM role ARNs and registers AWS connections via NerdGraph APIs. | 🟢 Ready |
-| **Metric Streams Integration** | Provision Firehose, S3, and CloudWatch Metric Streams via CloudFormation. | 🟢 Ready |
+| **Bulk Instrumentation** | Attach/detach telemetry layers to dozens of Lambda functions concurrently. Supports Node.js, Python, Java, .NET, and Ruby. | 🟢 Ready |
+| **Automated Account Linking** | Resolves IAM role ARNs and registers AWS connections via New Relic NerdGraph or Datadog APIs. | 🟢 Ready |
+| **Metric Streams Integration** | Provision CloudWatch Metric Streams, Kinesis Firehose, and IAM roles via CloudFormation. | 🟢 Ready |
 | **Self-Cleaning Deploys** | Auto-detects and removes failed/stuck CloudFormation stacks before retrying. | 🟢 Ready |
 | **Internal Safety Filtering** | Excludes management stacks and orchestrator helpers from instrumentation risks. | 🟢 Ready |
 
@@ -70,9 +70,9 @@ Instead of configuring settings file-by-file or writing custom CLI commands, you
                      │     (AWS Engine Instance)     │
                      └──────────┬──────────────┬─────┘
                                 │              │
-              AWS CloudFormation│              │New Relic NerdGraph
+              AWS CloudFormation│              │New Relic / Datadog API
               (Metric Streams)  ▼              ▼ (Account Link APIs)
-                        [AWS Account]   [New Relic Platform]
+                        [AWS Account]   [Observability Platforms]
 ```
 
 ---
@@ -133,6 +133,8 @@ go run ./cmd/server/main.go
   * `DATABASE_URL` (custom path/connection string)
   * `JWT_SECRET` (custom authentication signing key)
   * `ENCRYPTION_KEY` (64-character hex string to encrypt credentials)
+  * `DATADOG_API_KEY` (Datadog API Key for provider credential mapping)
+  * `DATADOG_SITE` (Datadog region host, e.g. `us5.datadoghq.com` or `datadoghq.eu`)
 
 </details>
 

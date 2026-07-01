@@ -1,13 +1,8 @@
-// Package newrelic — functions.go
-//
-// Listing Lambda functions and detecting their instrumentation status.
-// Ported from: newrelic_lambda_cli/functions.py :: list_functions()
-package newrelic
+package datadog
 
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
@@ -18,10 +13,7 @@ import (
 )
 
 // ListFunctions returns all Lambda functions in the current region
-// with their New Relic instrumentation status.
-//
-// Ported from: functions.py :: list_functions()
-// Improvement: Returns structured FunctionInfo instead of raw dicts.
+// with their Datadog instrumentation status.
 func ListFunctions(ctx context.Context, clients *awsclient.Factory) ([]types.FunctionInfo, error) {
 	lambdaClient, err := clients.Lambda(ctx)
 	if err != nil {
@@ -64,34 +56,34 @@ func ListFunctions(ctx context.Context, clients *awsclient.Factory) ([]types.Fun
 				info.Architecture = "x86_64"
 			}
 
-			// Check for New Relic and Datadog instrumentation by scanning layers
-			isNewRelic := false
+			// Check for Datadog and New Relic instrumentation by scanning layers
 			isDatadog := false
-			var nrLayerArn string
+			isNewRelic := false
+			var ddLayerArn string
 
 			for _, layer := range fn.Layers {
 				layerArn := deref(layer.Arn)
-				if IsNRLayer(layerArn, region) {
-					isNewRelic = true
-					nrLayerArn = layerArn
-				} else if strings.Contains(strings.ToLower(layerArn), "datadog") {
+				if IsDatadogLayer(layerArn, region) {
 					isDatadog = true
+					ddLayerArn = layerArn
+				} else if strings.Contains(strings.ToLower(layerArn), "newrelic") {
+					isNewRelic = true
 				}
 			}
 
-			if isNewRelic {
+			if isDatadog {
 				info.Status = "instrumented"
-				parts := strings.Split(nrLayerArn, ":")
+				parts := strings.Split(ddLayerArn, ":")
 				if len(parts) > 0 {
 					info.LayerVersion = parts[len(parts)-1]
 				}
 				info.Mode = detectMode(fn.Environment)
-			} else if isDatadog {
-				info.Status = "instrumented_datadog"
+			} else if isNewRelic {
+				info.Status = "instrumented_newrelic"
 				info.Mode = "serverless"
 			}
 
-			// Skip the internal helper / orchestrator functions
+			// Skip internal orchestrator helper functions
 			if isInternalFunction(info.Name) {
 				continue
 			}
@@ -103,31 +95,16 @@ func ListFunctions(ctx context.Context, clients *awsclient.Factory) ([]types.Fun
 	return functions, nil
 }
 
-// detectMode determines the instrumentation mode from the function's env vars.
+// detectMode determines the instrumentation mode from the environment variables.
 func detectMode(env *lambdatypes.EnvironmentResponse) string {
-	if env == nil {
+	if env == nil || env.Variables == nil {
 		return "none"
 	}
 	vars := env.Variables
-	if vars == nil {
-		return "none"
+	if _, ok := vars["DD_API_KEY"]; ok {
+		return "serverless"
 	}
-
-	// Check for APM mode
-	if apm, ok := vars["NEW_RELIC_APM_LAMBDA_MODE"]; ok {
-		if strings.EqualFold(apm, "true") {
-			return "apm"
-		}
-	}
-
-	// Check for extension (= serverless mode)
-	if ext, ok := vars["NEW_RELIC_LAMBDA_EXTENSION_ENABLED"]; ok {
-		if strings.EqualFold(ext, "true") {
-			return "serverless"
-		}
-	}
-
-	return "log_ingestion"
+	return "none"
 }
 
 // deref safely dereferences a *string, returning "" for nil.
@@ -144,35 +121,4 @@ func derefInt32(i *int32) int32 {
 		return 0
 	}
 	return *i
-}
-
-// isInternalFunction checks if a Lambda function name belongs to the orchestrator
-// or is an internal helper function deployed by New Relic templates.
-func isInternalFunction(name string) bool {
-	nameLower := strings.ToLower(name)
-	selfName := strings.ToLower(os.Getenv("AWS_LAMBDA_FUNCTION_NAME"))
-
-	// Skip orchestrator itself
-	if selfName != "" && nameLower == selfName {
-		return true
-	}
-	if strings.Contains(nameLower, "serverless-orchestrator") {
-		return true
-	}
-
-	// Skip New Relic integration helper functions
-	if strings.Contains(nameLower, "newrelic-log-ingestion") {
-		return true
-	}
-	if strings.Contains(nameLower, "graphqlapicall") {
-		return true
-	}
-	if strings.Contains(nameLower, "graphqlconfigureapicall") {
-		return true
-	}
-	if strings.Contains(nameLower, "loggroupmanagerfunction") {
-		return true
-	}
-
-	return false
 }

@@ -1,4 +1,4 @@
-module github.com/vectorsighttechnologies/serverless-orchestrator/lambda
+module github.com/vectorsight/serverless-tool/lambda
 
 go 1.22.0
 

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/types"
+	"github.com/vectorsight/serverless-tool/backend/internal/types"
 )
 
 // Client handles outgoing HTTP requests to the AWS Lambda Orchestrator API Gateway.
@@ -72,6 +72,17 @@ func (c *Client) Invoke(
 	}
 	if prefs.NRRegion != "" {
 		req.Header.Set("x-nr-region", prefs.NRRegion)
+	}
+
+	// 2b. Set Datadog and active provider headers
+	if prefs.SelectedProvider != "" {
+		req.Header.Set("x-selected-provider", prefs.SelectedProvider)
+	}
+	if prefs.DDApiKey != "" {
+		req.Header.Set("x-dd-api-key", prefs.DDApiKey)
+	}
+	if prefs.DDSite != "" {
+		req.Header.Set("x-dd-site", prefs.DDSite)
 	}
 
 	// 3. Perform request
