@@ -66,12 +66,12 @@ All contributors must sign our [Contributor License Agreement (CLA)](CLA.md) bef
 
 ### Reporting Bugs
 
-- Use the [Bug Report](https://github.com/vectorsighttechnologies/serverless-orchestrator/issues/new?template=bug_report.md) template.
+- Use the [Bug Report](https://github.com/vectorsighttechnologies/serverless-orchestrator/issues/new?template=bug_report.yml) template.
 - Include steps to reproduce, expected behavior, and environment details.
 
 ### Suggesting Features
 
-- Use the [Feature Request](https://github.com/vectorsighttechnologies/serverless-orchestrator/issues/new?template=feature_request.md) template.
+- Use the [Feature Request](https://github.com/vectorsighttechnologies/serverless-orchestrator/issues/new?template=feature_request.yml) template.
 - Describe the problem, proposed solution, and alternatives considered.
 
 ### Submitting Pull Requests
