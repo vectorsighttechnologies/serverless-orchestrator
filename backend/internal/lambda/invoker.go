@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vectorsight/serverless-tool/backend/internal/types"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/types"
 )
 
 // Client handles outgoing HTTP requests to the AWS Lambda Orchestrator API Gateway.

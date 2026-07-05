@@ -7,8 +7,8 @@ package handler
 import (
 	"github.com/aws/aws-lambda-go/events"
 
-	"github.com/vectorsight/serverless-tool/lambda/internal/config"
-	"github.com/vectorsight/serverless-tool/lambda/internal/types"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/config"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/types"
 )
 
 // HandleHealth returns the configuration status of the orchestrator.

@@ -17,10 +17,10 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 
-	"github.com/vectorsight/serverless-tool/lambda/internal/awsclient"
-	"github.com/vectorsight/serverless-tool/lambda/internal/datadog"
-	"github.com/vectorsight/serverless-tool/lambda/internal/newrelic"
-	"github.com/vectorsight/serverless-tool/lambda/internal/types"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/awsclient"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/datadog"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/newrelic"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/types"
 )
 
 // HandleListFunctions returns all Lambda functions with their NR/DD instrumentation status.

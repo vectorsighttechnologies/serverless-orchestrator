@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vectorsight/serverless-tool/lambda/internal/types"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/types"
 )
 
 // httpClient is reused across calls (connection pooling, keep-alive).

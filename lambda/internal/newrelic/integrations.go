@@ -19,9 +19,9 @@ import (
 	cftypes "github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 
-	"github.com/vectorsight/serverless-tool/lambda/internal/awsclient"
-	"github.com/vectorsight/serverless-tool/lambda/internal/config"
-	"github.com/vectorsight/serverless-tool/lambda/internal/types"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/awsclient"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/config"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/types"
 )
 
 const (

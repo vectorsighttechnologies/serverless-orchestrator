@@ -10,8 +10,8 @@ import (
 	lambdasvc "github.com/aws/aws-sdk-go-v2/service/lambda"
 	lambdatypes "github.com/aws/aws-sdk-go-v2/service/lambda/types"
 
-	"github.com/vectorsight/serverless-tool/lambda/internal/awsclient"
-	"github.com/vectorsight/serverless-tool/lambda/internal/config"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/awsclient"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/config"
 )
 
 // InstallLayer instruments a single Lambda function with Datadog.

@@ -1,4 +1,4 @@
-module github.com/vectorsight/serverless-tool/backend
+module github.com/vectorsighttechnologies/serverless-orchestrator/backend
 
 go 1.25.0
 

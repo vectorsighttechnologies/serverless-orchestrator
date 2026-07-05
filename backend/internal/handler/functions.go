@@ -8,10 +8,10 @@ import (
 
 	"github.com/patrickmn/go-cache"
 
-	"github.com/vectorsight/serverless-tool/backend/internal/auth"
-	"github.com/vectorsight/serverless-tool/backend/internal/db"
-	"github.com/vectorsight/serverless-tool/backend/internal/lambda"
-	"github.com/vectorsight/serverless-tool/backend/internal/types"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/auth"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/db"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/lambda"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/types"
 )
 
 // HandleListFunctions retrieves Lambda functions, checking in-memory cache first.

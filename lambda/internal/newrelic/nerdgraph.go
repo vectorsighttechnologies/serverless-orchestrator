@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vectorsight/serverless-tool/lambda/internal/config"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/config"
 )
 
 // NerdGraphClient handles interactions with New Relic's NerdGraph GraphQL API.

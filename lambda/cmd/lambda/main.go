@@ -20,8 +20,8 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 
-	"github.com/vectorsight/serverless-tool/lambda/internal/awsclient"
-	"github.com/vectorsight/serverless-tool/lambda/internal/handler"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/awsclient"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/handler"
 )
 
 // clients is the shared AWS client factory — initialised once, reused across invocations.

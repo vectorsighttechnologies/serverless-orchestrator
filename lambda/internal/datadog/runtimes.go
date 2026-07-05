@@ -4,7 +4,7 @@ package datadog
 import (
 	"strings"
 
-	"github.com/vectorsight/serverless-tool/lambda/internal/types"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/types"
 )
 
 // Datadog Layer publishing account ID.

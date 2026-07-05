@@ -14,7 +14,7 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
-	"github.com/vectorsight/serverless-tool/backend/internal/types"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/backend/internal/types"
 	_ "modernc.org/sqlite"
 )
 

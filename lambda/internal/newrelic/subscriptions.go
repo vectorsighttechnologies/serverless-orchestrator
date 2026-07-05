@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 
-	"github.com/vectorsight/serverless-tool/lambda/internal/awsclient"
+	"github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/awsclient"
 )
 
 const (

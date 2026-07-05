@@ -8,7 +8,7 @@
 // operations reference this single source of truth.
 package newrelic
 
-import "github.com/vectorsight/serverless-tool/lambda/internal/types"
+import "github.com/vectorsighttechnologies/serverless-orchestrator/lambda/internal/types"
 
 // NR Layer ARN prefix template. The account 451483290750 is New Relic's
 // official layer publishing account.
