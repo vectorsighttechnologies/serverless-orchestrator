@@ -8,7 +8,7 @@ The Serverless Orchestrator team takes security vulnerabilities seriously. We ap
 
 Instead, please report them via email to:
 
-📧 **[security@vectorsight.tech](mailto:security@vectorsight.tech)**
+📧 **[founders@vectorsight.tech](mailto:founders@vectorsight.tech)**
 
 ### What to Include
 
