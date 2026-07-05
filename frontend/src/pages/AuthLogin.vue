@@ -10,7 +10,7 @@
 
       <div class="auth-header">
         <div class="auth-logo">
-          <img src="/logo.png" alt="Lambda Monitor" class="auth-logo-img" />
+          <img src="/logo.png" alt="Serverless Orchestrator" class="auth-logo-img" />
         </div>
         <h1 class="auth-title">{{ isRegisterMode ? 'Create Account' : 'Welcome Back' }}</h1>
         <p class="auth-subtitle">

@@ -31,5 +31,8 @@ frontend/public/orchestrator-sam.zip
 .env.production
 .env.staging
 
+# TypeScript build info
+*.tsbuildinfo
+
 # Code review helper configs
 .code-review-graph/

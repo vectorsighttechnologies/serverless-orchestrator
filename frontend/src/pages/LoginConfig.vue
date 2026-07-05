@@ -5,10 +5,10 @@
       <div class="app-header-left">
         <div class="app-brand">
           <div class="app-logo-wrap">
-            <img src="/logo.png" alt="Lambda Monitor" class="app-logo-img" />
+            <img src="/logo.png" alt="Serverless Orchestrator" class="app-logo-img" />
           </div>
           <div>
-            <span class="app-name">Lambda<span class="app-name-accent"> Monitor</span></span>
+            <span class="app-name">Serverless<span class="app-name-accent"> Orchestrator</span></span>
             <span class="app-connection">
               <span class="connection-dot"></span>
               Not connected

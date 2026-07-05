@@ -23,10 +23,10 @@
       <div class="app-header-left">
         <div class="app-brand">
           <div class="app-logo-wrap">
-            <img src="/logo.png" alt="Lambda Monitor" class="app-logo-img" />
+            <img src="/logo.png" alt="Serverless Orchestrator" class="app-logo-img" />
           </div>
           <div>
-            <span class="app-name">Lambda<span class="app-name-accent"> Monitor</span></span>
+            <span class="app-name">Serverless<span class="app-name-accent"> Orchestrator</span></span>
             <span class="app-tagline">Serverless Observability Platform</span>
           </div>
         </div>
@@ -199,7 +199,7 @@
         <!-- Footer note -->
         <p class="provider-note">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          Secure · Proprietary · Your keys never leave your AWS account
+          Secure · Open Source · Your keys never leave your AWS account · © 2026 VectorSight Technologies
         </p>
       </div>
     </div>

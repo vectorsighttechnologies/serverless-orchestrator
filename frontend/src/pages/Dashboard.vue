@@ -5,10 +5,10 @@
       <div class="dash-header-left">
         <div class="dash-brand">
           <div class="dash-logo-wrap">
-            <img src="/logo.png" alt="Lambda Monitor" class="dash-logo-img" />
+            <img src="/logo.png" alt="Serverless Orchestrator" class="dash-logo-img" />
           </div>
           <div>
-            <span class="dash-name">Lambda<span class="dash-name-accent"> Monitor</span></span>
+            <span class="dash-name">Serverless<span class="dash-name-accent"> Orchestrator</span></span>
             <span class="dash-connection">
               <span class="connection-dot"></span>
               {{ connectionLabel }}

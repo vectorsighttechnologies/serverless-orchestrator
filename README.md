@@ -7,7 +7,7 @@
 <h3 align="center">Serverless Orchestrator</h3>
 
 <p align="center">
-  A premium, self-hosted platform designed to automate AWS Lambda instrumentation, configure telemetry, and manage New Relic and Datadog observability across accounts and regions.
+  A premium, open-source platform for single-click instrumentation of your AWS Lambda functions. Automate telemetry, configure observability layers, and manage New Relic & Datadog integrations across accounts and regions — all from a single dashboard.
 </p>
 
 <p align="center">
@@ -23,13 +23,16 @@
   <a href="https://aws.amazon.com/">
     <img src="https://img.shields.io/badge/AWS-Serverless-FF9900.svg?style=flat-square&logo=amazon-aws&logoColor=white" alt="AWS Status" />
   </a>
+  <a href="https://vectorsight.tech">
+    <img src="https://img.shields.io/badge/Powered_by-VectorSight-1ce783.svg?style=flat-square" alt="VectorSight" />
+  </a>
 </p>
 
 ---
 
 ## 🎯 What is Serverless Orchestrator?
 
-Managing serverless observability at scale can be challenging. **Serverless Orchestrator** is a lightweight, secure tool that handles the complex AWS configuration, New Relic & Datadog account linking, and Lambda layer management for you. 
+Managing serverless observability at scale can be challenging. **Serverless Orchestrator** is a lightweight, open-source tool that provides **single-click instrumentation** for your AWS Lambda functions. It handles the complex AWS configuration, New Relic & Datadog account linking, and Lambda layer management for you. 
 
 Instead of configuring settings file-by-file or writing custom CLI commands, you get an interactive dashboard UI to manage all operations concurrently.
 
@@ -168,8 +171,21 @@ npm run dev
 
 ---
 
+## 🤝 Contributing
+
+We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) to get started.
+
+- 📋 [Code of Conduct](CODE_OF_CONDUCT.md)
+- 🔐 [Security Policy](SECURITY.md)
+- 📝 [Changelog](CHANGELOG.md)
+
+---
+
 ## 📜 License
 
-This project is licensed under the terms of the **Apache License 2.0**. It grants users and contributors explicit patent protection while offering full liability disclaimers:
+Copyright © 2026 [VectorSight Technologies](https://vectorsight.tech). All rights reserved.
+
+This project is licensed under the **Apache License 2.0** — see the [LICENSE](LICENSE) file for details.
 
 > Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0).
+

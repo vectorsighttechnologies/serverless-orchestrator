@@ -1,4 +1,4 @@
-# Lambda Instrumentation Platform — Orchestrator Deployment
+# Serverless Orchestrator — Lambda Engine Deployment
 
 This package contains the AWS Serverless Application Model (SAM) deployment files for the Lambda Orchestrator function.
 
@@ -48,4 +48,4 @@ This package contains the AWS Serverless Application Model (SAM) deployment file
      Look for the `value` field in the JSON response (e.g., `"value": "your-actual-api-key-here"`).
    - Alternatively, open the **AWS Console** -> **API Gateway** -> **API Keys**, click on the key named `<StackName>-api-key`, and click **Show** to copy the value.
 
-7. Enter the **API Gateway URL** and the **API Key** into the configuration screen of the Lambda Monitor UI.
+7. Enter the **API Gateway URL** and the **API Key** into the configuration screen of the Serverless Orchestrator UI.

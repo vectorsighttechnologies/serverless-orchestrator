@@ -5,10 +5,10 @@
       <div class="nav-inner container">
         <div class="nav-brand">
           <div class="nav-logo-wrap">
-            <img src="/logo.png" alt="Lambda Monitor" class="nav-logo-img" />
+            <img src="/logo.png" alt="Serverless Orchestrator" class="nav-logo-img" />
           </div>
           <div>
-            <span class="nav-name">Lambda<span class="nav-name-accent"> Monitor</span></span>
+            <span class="nav-name">Serverless<span class="nav-name-accent"> Orchestrator</span></span>
           </div>
         </div>
         <div class="nav-actions">
@@ -83,7 +83,7 @@
               <span class="dot dot--yellow"></span>
               <span class="dot dot--green"></span>
             </div>
-            <span class="terminal__title">Lambda Monitor — Instrumentation</span>
+            <span class="terminal__title">Serverless Orchestrator — Instrumentation</span>
           </div>
           <div class="terminal__body">
             <div class="terminal__line"><span class="t-dim">$</span> <span class="t-cmd">select</span> provider <span class="t-accent">newrelic</span></div>
@@ -177,16 +177,16 @@
         <div class="footer-inner">
           <div class="footer-brand">
             <div class="footer-logo-wrap">
-              <img src="/logo.png" alt="Lambda Monitor" class="footer-logo-img" />
+              <img src="/logo.png" alt="Serverless Orchestrator" class="footer-logo-img" />
             </div>
-            <span>Lambda<span style="color: var(--accent)"> Monitor</span></span>
+            <span>Serverless<span style="color: var(--accent)"> Orchestrator</span></span>
           </div>
           <div class="footer-links">
             <router-link to="/auth" class="footer-link">Log In</router-link>
             <router-link to="/auth" class="footer-link">Get Started</router-link>
           </div>
           <p class="footer-copy">
-            Secure · Proprietary · Your keys never leave your AWS account
+            © 2026 <a href="https://vectorsight.tech" class="footer-link" target="_blank" rel="noopener">VectorSight Technologies</a> · Apache 2.0 License · Open Source
           </p>
         </div>
       </div>
